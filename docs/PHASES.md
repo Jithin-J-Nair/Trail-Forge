@@ -63,3 +63,11 @@
 3. Zustand `tour-scene-store` holds response/selection/language/status; `?debug=1` shows FPS/draw-call overlay; WebGL fallback message included.
 4. Fixture data drives the preview; geometries dispose on unmount to avoid leaks.
 5. Interview line: “Phase 6 proves the 3D performance budget—merged buildings, few draw calls, and a readable night city shell.”
+
+## Phase 7 summary
+
+1. Added POI pins (beam + pulsing ring + Html labels) colored by verification status; rejected pins are hidden.
+2. RouteLine draws a CatmullRom path with stop markers and a breathing dash opacity; Play route flies the camera stop-to-stop.
+3. Selection flies the camera to a pin and opens keyboard paths: Tab cycles, arrows step the route, Escape clears; prefers-reduced-motion uses jump cuts.
+4. Profiler note: pin pulse/route opacity mutate existing uniforms/scales only—no Vector3/array allocations inside `useFrame`.
+5. Interview line: “Phase 7 makes the tour explorable—mouse, touch, and keyboard all drive the same selection model.”
