@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import type { GenerateResponse } from '@trailforge/shared';
 import type { WebGLRenderer } from 'three';
 import { Buildings } from './Buildings.js';
@@ -8,6 +8,7 @@ import { FlyThroughController } from './FlyThrough.js';
 import { IntroCamera } from './IntroCamera.js';
 import { KeyboardNav } from './KeyboardNav.js';
 import { Pins } from './Pins.js';
+import { dprForQuality, probeQuality } from './quality.js';
 import { Roads } from './Roads.js';
 import { RouteLine } from './RouteLine.js';
 import { SelectFlyTo } from './SelectFlyTo.js';
@@ -39,6 +40,8 @@ export function Scene({ data, debug = false }: { data: GenerateResponse; debug?:
   const [webglOk, setWebglOk] = useState(true);
   const [gl, setGl] = useState<WebGLRenderer | null>(null);
   const [playing, setPlaying] = useState(false);
+  const quality = useMemo(() => probeQuality(), []);
+  const dpr = dprForQuality(quality);
 
   useEffect(() => {
     setWebglOk(supportsWebGL());
@@ -49,10 +52,10 @@ export function Scene({ data, debug = false }: { data: GenerateResponse; debug?:
   return (
     <div className="relative h-[420px] w-full overflow-hidden border border-white/10 bg-black">
       <Canvas
-        dpr={[1, 2]}
-        gl={{ antialias: true, powerPreference: 'high-performance' }}
+        dpr={dpr}
+        gl={{ antialias: quality !== 'low', powerPreference: 'high-performance' }}
         camera={{ position: [0, 180, 220], fov: 45, near: 1, far: 800 }}
-        shadows
+        shadows={quality === 'high'}
         onCreated={({ gl: renderer }) => setGl(renderer)}
       >
         <Suspense fallback={null}>
