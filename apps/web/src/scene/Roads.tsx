@@ -10,12 +10,17 @@ export function Roads({ roads }: { roads: Road[] }) {
         const a = road.points[i];
         const b = road.points[i + 1];
         if (!a || !b) continue;
-        positions.push(a[0], 0.15, a[1], b[0], 0.15, b[1]);
+        positions.push(a[0], 0.2, a[1], b[0], 0.2, b[1]);
       }
     }
     const geom = new BufferGeometry();
     geom.setAttribute('position', new Float32BufferAttribute(positions, 3));
-    const mat = new LineBasicMaterial({ color: '#7dd3fc', transparent: true, opacity: 0.75 });
+    const mat = new LineBasicMaterial({
+      color: '#4FE3FF',
+      transparent: true,
+      opacity: 0.85,
+      toneMapped: false,
+    });
     const lines = new LineSegments(geom, mat);
     return {
       object: lines,
@@ -31,11 +36,10 @@ export function Roads({ roads }: { roads: Road[] }) {
   return (
     <group>
       <primitive object={object} />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
-        <planeGeometry args={[400, 400]} />
-        <meshStandardMaterial color="#0a1210" />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
+        <planeGeometry args={[520, 520]} />
+        <meshStandardMaterial color="#060912" roughness={1} metalness={0} />
       </mesh>
-      <gridHelper args={[400, 40, '#1e3a2f', '#13241c']} position={[0, 0.01, 0]} />
     </group>
   );
 }

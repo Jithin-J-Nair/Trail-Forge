@@ -4,12 +4,56 @@ import {
   BufferGeometry,
   Color,
   ExtrudeGeometry,
-  MeshStandardMaterial,
+  ShaderMaterial,
   Shape,
   type BufferGeometry as BufGeo,
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { Building } from '@trailforge/shared';
+
+const vertexShader = /* glsl */ `
+  varying vec3 vWorldPos;
+  varying vec3 vNormalW;
+  varying float vHeight;
+  attribute float aHeight;
+  void main() {
+    vec4 world = modelMatrix * vec4(position, 1.0);
+    vWorldPos = world.xyz;
+    vNormalW = normalize(mat3(modelMatrix) * normal);
+    vHeight = aHeight;
+    gl_Position = projectionMatrix * viewMatrix * world;
+  }
+`;
+
+const fragmentShader = /* glsl */ `
+  varying vec3 vWorldPos;
+  varying vec3 vNormalW;
+  varying float vHeight;
+  uniform float uTime;
+
+  float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+  }
+
+  void main() {
+    float t = clamp(vHeight / 45.0, 0.0, 1.0);
+    vec3 base = mix(vec3(0.05, 0.08, 0.16), vec3(0.12, 0.16, 0.28), t);
+    float up = abs(vNormalW.y);
+    float side = 1.0 - smoothstep(0.55, 0.95, up);
+
+    vec2 grid = floor(vWorldPos.xz * 0.55);
+    float floorY = floor(vWorldPos.y * 0.42);
+    float lit = step(0.62, hash(grid + floorY));
+    float flicker = 0.85 + 0.15 * sin(uTime * (1.2 + hash(grid) * 2.0) + hash(grid) * 6.0);
+    vec3 windowCol = vec3(0.31, 0.89, 1.0) * lit * side * flicker * 1.35;
+    vec3 violet = vec3(0.55, 0.48, 1.0) * lit * side * 0.35;
+
+    vec3 color = base + windowCol + violet;
+    float emissive = length(windowCol) * 0.9;
+    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor.rgb += vec3(emissive * 0.15);
+  }
+`;
 
 function buildingGeometry(b: Building): ExtrudeGeometry {
   const shape = new Shape();
@@ -26,12 +70,11 @@ function buildingGeometry(b: Building): ExtrudeGeometry {
     bevelEnabled: false,
   });
   geom.rotateX(-Math.PI / 2);
+  const count = geom.attributes.position!.count;
+  const heights = new Float32Array(count);
+  heights.fill(b.heightMeters);
+  geom.setAttribute('aHeight', new BufferAttribute(heights, 1));
   return geom;
-}
-
-function colorByHeight(height: number): Color {
-  const t = Math.min(1, height / 40);
-  return new Color().setHSL(0.58, 0.35, 0.18 + t * 0.35);
 }
 
 export function Buildings({ buildings }: { buildings: Building[] }) {
@@ -39,33 +82,44 @@ export function Buildings({ buildings }: { buildings: Building[] }) {
     const geos: BufGeo[] = [];
     for (const b of buildings) {
       if (b.footprint.length < 3) continue;
-      const g = buildingGeometry(b);
-      const color = colorByHeight(b.heightMeters);
-      const colors = new Float32Array(g.attributes.position!.count * 3);
-      for (let i = 0; i < colors.length; i += 3) {
-        colors[i] = color.r;
-        colors[i + 1] = color.g;
-        colors[i + 2] = color.b;
-      }
-      g.setAttribute('color', new BufferAttribute(colors, 3));
-      geos.push(g);
+      geos.push(buildingGeometry(b));
     }
     const merged = geos.length > 0 ? mergeGeometries(geos, false) : new BufferGeometry();
     for (const g of geos) g.dispose();
-    const mat = new MeshStandardMaterial({
-      vertexColors: true,
-      roughness: 0.85,
-      metalness: 0.05,
+    const mat = new ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: { uTime: { value: 0 } },
     });
+    // Keep a height-tinted fallback color attribute unused by shader but harmless if merged empty
+    if (merged && !merged.getAttribute('color')) {
+      const n = merged.attributes.position?.count ?? 0;
+      const colors = new Float32Array(n * 3);
+      const c = new Color('#0e1428');
+      for (let i = 0; i < n; i++) {
+        colors[i * 3] = c.r;
+        colors[i * 3 + 1] = c.g;
+        colors[i * 3 + 2] = c.b;
+      }
+      merged.setAttribute('color', new BufferAttribute(colors, 3));
+    }
     return { geometry: merged ?? new BufferGeometry(), material: mat };
   }, [buildings]);
 
   useEffect(() => {
+    let raf = 0;
+    const tick = (t: number) => {
+      const u = material.uniforms['uTime'];
+      if (u) u.value = t * 0.001;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
     return () => {
+      cancelAnimationFrame(raf);
       geometry.dispose();
       material.dispose();
     };
   }, [geometry, material]);
 
-  return <mesh geometry={geometry} material={material} castShadow receiveShadow />;
+  return <mesh geometry={geometry} material={material} />;
 }

@@ -1,13 +1,13 @@
 import type { GenerateResponse } from '@trailforge/shared';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Footer } from './components/Footer.js';
-import { Header } from './components/Header.js';
 import { SAMPLE_RESPONSE } from './fixtures/sample-response.js';
 import { detectLang, t, type UiLang } from './i18n/messages.js';
 import { useTourSceneStore } from './scene/tour-scene-store.js';
 import { useTourStore } from './store/tour-store.js';
 import type { ApprovedContent } from './ui/export.js';
 import { ResultPanel } from './ui/ResultPanel.js';
+import { RouteBar } from './ui/RouteBar.js';
 import { SearchPanel } from './ui/SearchPanel.js';
 import { Toast } from './ui/Toast.js';
 
@@ -24,6 +24,10 @@ function isDemoMode(): boolean {
   return new URLSearchParams(window.location.search).get('demo') === '1';
 }
 
+function asDemoFixture(data: GenerateResponse): GenerateResponse {
+  return { ...data, demo: true };
+}
+
 export function App() {
   const { draft } = useTourStore();
   const { response, setResponse, setUiLanguage, setStatus } = useTourSceneStore();
@@ -31,8 +35,9 @@ export function App() {
   const [stage, setStage] = useState<Stage | null>(null);
   const [content, setContent] = useState<ApprovedContent[]>([]);
   const [toast, setToast] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(true);
+  const [mobileSheet, setMobileSheet] = useState<'search' | 'results' | null>('search');
   const [demoActive, setDemoActive] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   const debug = useMemo(() => {
@@ -48,16 +53,27 @@ export function App() {
   }, [lang, setUiLanguage]);
 
   useEffect(() => {
-    if (!isDemoMode()) return;
-    const demo: GenerateResponse = { ...SAMPLE_RESPONSE, demo: true };
+    // Always paint the night-city fixture so the full-bleed canvas looks finished offline.
+    const demo = asDemoFixture(SAMPLE_RESPONSE);
     setResponse(demo);
     setContent(demo.content.map((c) => ({ ...c })));
     setDemoActive(true);
   }, [setResponse]);
 
+  const applyFixture = useCallback(
+    (reason?: string) => {
+      const demo = asDemoFixture(SAMPLE_RESPONSE);
+      setResponse(demo);
+      setContent(demo.content.map((c) => ({ ...c })));
+      setDemoActive(true);
+      if (reason) setToast(reason);
+    },
+    [setResponse],
+  );
+
   const runGenerate = useCallback(async () => {
     if (!navigator.onLine) {
-      setToast(t(lang, 'offline'));
+      applyFixture(t(lang, 'offline'));
       return;
     }
     if (!draft.query || !draft.theme) {
@@ -69,7 +85,7 @@ export function App() {
     abortRef.current = controller;
     setStatus('loading');
     setStage('locating');
-    setDemoActive(false);
+    setPlaying(false);
     const timers = [
       window.setTimeout(() => setStage('fetching'), 400),
       window.setTimeout(() => setStage('writing'), 900),
@@ -96,129 +112,137 @@ export function App() {
       const data = (await res.json()) as GenerateResponse;
       setResponse(data);
       setContent(data.content.map((c) => ({ ...c })));
+      setDemoActive(Boolean(data.demo));
       setStatus('ready');
-      setSheetOpen(true);
+      setMobileSheet('results');
       if (data.message) setToast(data.message);
     } catch (err) {
       if ((err as Error).name === 'AbortError') return;
       setStatus('error', (err as Error).message);
-      setToast((err as Error).message || t(lang, 'errorRetry'));
-      if (isDemoMode()) {
-        const demo: GenerateResponse = { ...SAMPLE_RESPONSE, demo: true };
-        setResponse(demo);
-        setContent(demo.content.map((c) => ({ ...c })));
-        setDemoActive(true);
-      }
+      applyFixture((err as Error).message || t(lang, 'errorRetry'));
+      if (isDemoMode()) setDemoActive(true);
     } finally {
       timers.forEach(clearTimeout);
       setStage(null);
     }
-  }, [draft, lang, setResponse, setStatus]);
+  }, [applyFixture, draft, lang, setResponse, setStatus]);
+
+  const searchPanel = (
+    <SearchPanel
+      lang={lang}
+      onLangChange={setLang}
+      loadingStage={stage}
+      onGenerate={() => void runGenerate()}
+      onCancel={() => abortRef.current?.abort()}
+    />
+  );
 
   return (
-    <div className="flex min-h-screen flex-col bg-trail-bg text-trail-fog">
-      <Header />
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 md:flex-row md:px-6">
-        <div className="flex min-w-0 flex-1 flex-col gap-6">
-          <section>
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h1 className="font-display text-4xl font-bold tracking-tight">TrailForge</h1>
-              <label className="text-xs">
-                {t(lang, 'language')}
-                <select
-                  className="ml-2 border border-white/15 bg-trail-surface px-2 py-1"
-                  value={lang}
-                  onChange={(e) => setLang(e.target.value as UiLang)}
-                >
-                  <option value="en">EN</option>
-                  <option value="ja">JA</option>
-                </select>
-              </label>
+    <div className="relative h-[100dvh] w-screen overflow-hidden bg-trail-bg text-trail-fog">
+      {response ? (
+        <Suspense
+          fallback={
+            <div className="absolute inset-0 flex items-center justify-center bg-trail-bg text-sm text-trail-muted">
+              Loading 3D scene…
             </div>
-            <p className="max-w-xl text-base text-trail-muted">{t(lang, 'appTagline')}</p>
-            {demoActive || response?.demo ? (
-              <p
-                className="mt-2 inline-block border border-amber-400/60 bg-amber-500/20 px-2 py-1 text-xs font-semibold tracking-wide text-amber-200"
-                role="status"
-              >
-                DEMO DATA
-              </p>
-            ) : null}
-          </section>
-
-          <div className="hidden md:block">
-            <SearchPanel
-              lang={lang}
-              loadingStage={stage}
-              onGenerate={() => void runGenerate()}
-              onCancel={() => abortRef.current?.abort()}
-            />
-          </div>
-
-          <section aria-labelledby="scene-heading">
-            <h2 id="scene-heading" className="mb-3 font-display text-xl font-semibold">
-              Scene
-            </h2>
-            {response ? (
-              <Suspense
-                fallback={
-                  <div className="flex h-[420px] items-center justify-center border border-white/10 bg-black/40 text-sm text-trail-muted">
-                    Loading 3D scene…
-                  </div>
-                }
-              >
-                <Scene data={response} debug={debug} />
-              </Suspense>
-            ) : (
-              <div className="flex h-[420px] items-center justify-center border border-white/10 bg-black/40 text-sm text-trail-muted">
-                Generate a tour to load the live map scene.
-              </div>
-            )}
-          </section>
-        </div>
-
-        <div
-          className={`md:w-96 md:shrink-0 ${
-            sheetOpen
-              ? 'fixed inset-x-0 bottom-0 z-30 max-h-[55vh] overflow-auto rounded-t-lg border-t border-white/15 bg-trail-bg p-4 md:static md:max-h-none md:rounded-none md:border-0 md:bg-transparent md:p-0'
-              : 'hidden md:block'
-          }`}
+          }
         >
-          <button
-            type="button"
-            className="mb-2 w-full text-center text-xs text-trail-muted md:hidden"
-            onClick={() => setSheetOpen(false)}
-          >
-            Close panel
-          </button>
-          <div className="mb-4 md:hidden">
-            <SearchPanel
-              lang={lang}
-              loadingStage={stage}
-              onGenerate={() => void runGenerate()}
-              onCancel={() => abortRef.current?.abort()}
-            />
-          </div>
-          {response ? (
+          <Scene
+            data={response}
+            debug={debug}
+            playing={playing}
+            onPlayStop={() => setPlaying(false)}
+          />
+        </Suspense>
+      ) : null}
+
+      {(demoActive || response?.demo) && (
+        <p
+          className="absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-full border border-trail-review/50 bg-trail-review/15 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-trail-review"
+          role="status"
+        >
+          DEMO DATA
+        </p>
+      )}
+
+      {/* Desktop floating panels */}
+      <div className="pointer-events-none absolute inset-0 z-20 hidden md:block">
+        <div className="pointer-events-auto absolute left-5 top-5 w-[340px]">{searchPanel}</div>
+        {response ? (
+          <div className="pointer-events-auto absolute right-5 top-5 w-[360px]">
             <ResultPanel
               lang={lang}
               response={response}
               content={content}
               onContentChange={setContent}
             />
-          ) : null}
-        </div>
+          </div>
+        ) : null}
+        {response ? (
+          <div className="pointer-events-auto absolute bottom-6 left-1/2 w-[min(720px,calc(100vw-2rem))] -translate-x-1/2">
+            <RouteBar
+              lang={lang}
+              response={response}
+              content={content}
+              playing={playing}
+              onTogglePlay={() => setPlaying((p) => !p)}
+            />
+          </div>
+        ) : null}
       </div>
 
-      {!sheetOpen ? (
-        <button
-          type="button"
-          className="fixed bottom-4 left-1/2 z-30 -translate-x-1/2 bg-trail-accent px-4 py-2 text-sm text-white md:hidden"
-          onClick={() => setSheetOpen(true)}
-        >
-          Open panel
-        </button>
-      ) : null}
+      {/* Mobile bottom sheets */}
+      <div className="absolute inset-x-0 bottom-0 z-30 md:hidden">
+        <div className="mb-2 flex justify-center gap-2 px-3">
+          <button
+            type="button"
+            className="glass-btn-ghost px-3 py-1.5 text-xs"
+            onClick={() => setMobileSheet('search')}
+          >
+            Search
+          </button>
+          {response ? (
+            <button
+              type="button"
+              className="glass-btn-ghost px-3 py-1.5 text-xs"
+              onClick={() => setMobileSheet('results')}
+            >
+              Results
+            </button>
+          ) : null}
+        </div>
+        {mobileSheet ? (
+          <div className="max-h-[58vh] overflow-auto rounded-t-glass border border-trail-border bg-trail-surface p-3 backdrop-blur-glass">
+            <button
+              type="button"
+              className="mb-2 w-full text-center text-xs text-trail-muted"
+              onClick={() => setMobileSheet(null)}
+            >
+              Close
+            </button>
+            {mobileSheet === 'search' ? searchPanel : null}
+            {mobileSheet === 'results' && response ? (
+              <>
+                <ResultPanel
+                  lang={lang}
+                  response={response}
+                  content={content}
+                  onContentChange={setContent}
+                />
+                <div className="mt-3">
+                  <RouteBar
+                    lang={lang}
+                    response={response}
+                    content={content}
+                    playing={playing}
+                    onTogglePlay={() => setPlaying((p) => !p)}
+                  />
+                </div>
+              </>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
 
       <Footer />
       {toast ? (

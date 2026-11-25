@@ -21,7 +21,10 @@ export type MessageKey =
   | 'exportCsv'
   | 'offline'
   | 'errorRetry'
-  | 'language';
+  | 'language'
+  | 'advanced'
+  | 'play'
+  | 'pause';
 
 export const messages = {
   en: {
@@ -43,11 +46,14 @@ export const messages = {
     whyTrusted: 'Why is this trusted?',
     approve: 'Approve',
     remove: 'Remove',
-    exportGeojson: 'Export GeoJSON',
-    exportCsv: 'Export CSV',
+    exportGeojson: 'GeoJSON',
+    exportCsv: 'CSV',
     offline: 'You appear offline. Reconnect and retry.',
     errorRetry: 'Something went wrong. Retry?',
     language: 'Language',
+    advanced: 'Advanced',
+    play: 'Play',
+    pause: 'Pause',
   },
   ja: {
     appTagline: 'OpenStreetMapの実在スポットからテーマ散策を計画します。',
@@ -68,11 +74,14 @@ export const messages = {
     whyTrusted: 'なぜ信頼できる？',
     approve: '承認',
     remove: '削除',
-    exportGeojson: 'GeoJSON出力',
-    exportCsv: 'CSV出力',
+    exportGeojson: 'GeoJSON',
+    exportCsv: 'CSV',
     offline: 'オフラインのようです。再接続して再試行してください。',
     errorRetry: 'エラーが発生しました。再試行しますか？',
     language: '言語',
+    advanced: '詳細設定',
+    play: '再生',
+    pause: '一時停止',
   },
 } as const satisfies Record<'en' | 'ja', Record<MessageKey, string>>;
 

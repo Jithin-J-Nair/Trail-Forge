@@ -19,7 +19,8 @@ describe('useTourSceneStore', () => {
     useTourSceneStore.getState().setSelectedPoiId('node/1');
     const state = useTourSceneStore.getState();
     expect(state.status).toBe('ready');
-    expect(state.response?.pois).toHaveLength(2);
+    expect(state.response?.pois).toHaveLength(8);
+    expect(state.response?.scene.buildings).toHaveLength(400);
     expect(state.selectedPoiId).toBe('node/1');
   });
 });

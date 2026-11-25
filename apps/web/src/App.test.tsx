@@ -7,9 +7,11 @@ vi.mock('./scene/Scene.js', () => ({
 }));
 
 describe('App', () => {
-  it('shows brand and OSM attribution', () => {
+  it('shows brand and OSM attribution without Phase 1 scaffold copy', () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'TrailForge' })).toBeInTheDocument();
+    expect(screen.getAllByText('TrailForge').length).toBeGreaterThan(0);
     expect(screen.getByText('© OpenStreetMap contributors')).toBeInTheDocument();
+    expect(screen.queryByText('Phase 1 scaffold')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Scene' })).not.toBeInTheDocument();
   });
 });
