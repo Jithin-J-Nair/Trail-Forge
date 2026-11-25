@@ -1,16 +1,20 @@
 import type { GenerateResponse } from '@trailforge/shared';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Footer } from './components/Footer.js';
 import { Header } from './components/Header.js';
 import { SAMPLE_RESPONSE } from './fixtures/sample-response.js';
 import { detectLang, t, type UiLang } from './i18n/messages.js';
-import { Scene } from './scene/Scene.js';
 import { useTourSceneStore } from './scene/tour-scene-store.js';
 import { useTourStore } from './store/tour-store.js';
 import type { ApprovedContent } from './ui/export.js';
 import { ResultPanel } from './ui/ResultPanel.js';
 import { SearchPanel } from './ui/SearchPanel.js';
 import { Toast } from './ui/Toast.js';
+
+const Scene = lazy(async () => {
+  const mod = await import('./scene/Scene.js');
+  return { default: mod.Scene };
+});
 
 type Stage = 'locating' | 'fetching' | 'writing' | 'building';
 
@@ -133,7 +137,17 @@ export function App() {
             <h2 id="scene-heading" className="mb-3 font-display text-xl font-semibold">
               Scene
             </h2>
-            {response ? <Scene data={response} debug={debug} /> : null}
+            {response ? (
+              <Suspense
+                fallback={
+                  <div className="flex h-[420px] items-center justify-center border border-white/10 bg-black/40 text-sm text-trail-muted">
+                    Loading 3D scene…
+                  </div>
+                }
+              >
+                <Scene data={response} debug={debug} />
+              </Suspense>
+            ) : null}
           </section>
         </div>
 

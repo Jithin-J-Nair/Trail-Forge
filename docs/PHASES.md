@@ -79,3 +79,11 @@
 3. Client-side GeoJSON/CSV export of verified/human-reviewed items with ODbL metadata and UTF-8 BOM for CSV.
 4. Typed ja/en dictionaries with `?lang=` persistence; mobile uses a bottom sheet for the panel.
 5. Interview line: “Phase 8 closes the loop—search, verify, edit, and export a tour without leaving the browser.”
+
+## Phase 9 summary
+
+1. Lazy-loaded the 3D scene chunk; quality probe (`?quality=low|medium|high`) drives DPR, antialias, and shadows.
+2. Typography/tokens: Noto Sans JP stack, shared transition micro-interactions, reserved scene height to limit CLS.
+3. Documented before/after bundle and runtime budgets in `docs/PERFORMANCE.md`.
+4. Accessibility: focus styles, aria-live loading, keyboardable controls retained.
+5. Interview line: “Phase 9 keeps the night city fast—code-split WebGL, adaptive quality, and measured budgets.”
