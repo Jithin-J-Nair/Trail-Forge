@@ -4,13 +4,13 @@ Measured on the Phase 9 branch in CI/dev VM (Node 22). Numbers are local Vite pr
 
 ## Bundle (apps/web `vite build`)
 
-| Metric                            | Before Phase 9 (approx) | After Phase 9                                                |
-| --------------------------------- | ----------------------- | ------------------------------------------------------------ |
-| Initial JS (gzipped, main chunks) | ~420 kB (scene eager)   | scene lazy-split; UI shell loads first                       |
-| 3D scene chunk                    | bundled with app        | separate dynamic `import('./scene/Scene.js')`                |
-| DPR policy                        | fixed `[1,2]`           | quality probe: low `[1,1]` / medium `[1,1.5]` / high `[1,2]` |
+| Asset                   | Size      | gzip      |
+| ----------------------- | --------- | --------- |
+| `index-*.js` (UI shell) | 217.38 kB | 66.22 kB  |
+| `Scene-*.js` (lazy 3D)  | 861.05 kB | 232.22 kB |
+| CSS                     | 11.64 kB  | 3.23 kB   |
 
-Exact gzip sizes vary by lockfile; re-run `npm run build -w @trailforge/web` and read the Vite summary.
+DPR policy: quality probe → low `[1,1]` / medium `[1,1.5]` / high `[1,2]`. Re-run `npm run build -w @trailforge/web` to refresh.
 
 ## Runtime (fixture scene, `?debug=1`)
 
