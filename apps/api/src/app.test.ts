@@ -22,4 +22,16 @@ describe('API health', () => {
     expect(res.status).toBe(200);
     expect(res.body.request.area).toBe('Osaka');
   });
+
+  it('validates generate requests with shared GenerateRequestSchema', async () => {
+    const app = createApp({ llm: new MockLlmProvider() });
+    const res = await request(app).post('/api/v1/generate/validate').send({
+      query: 'Osaka',
+      theme: 'food',
+      durationMinutes: 90,
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.request.query).toBe('Osaka');
+    expect(res.body.request.radiusMeters).toBe(500);
+  });
 });

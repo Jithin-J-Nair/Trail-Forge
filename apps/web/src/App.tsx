@@ -1,7 +1,10 @@
+import { ThemeSchema, type Theme } from '@trailforge/shared';
 import { Footer } from './components/Footer.js';
 import { Header } from './components/Header.js';
 import { ScenePlaceholder } from './components/ScenePlaceholder.js';
 import { useTourStore } from './store/tour-store.js';
+
+const THEMES = ThemeSchema.options;
 
 export function App() {
   const { draft, setDraft } = useTourStore();
@@ -14,7 +17,7 @@ export function App() {
         <section className="mb-10">
           <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">TrailForge</h1>
           <p className="mt-3 max-w-xl text-base text-trail-muted">
-            Plan a themed walking tour from real OpenStreetMap places — Phase 1 scaffold.
+            Plan a themed walking tour from real OpenStreetMap places — Phase 2 shared contracts.
           </p>
         </section>
 
@@ -26,36 +29,52 @@ export function App() {
             }}
           >
             <label className="grid gap-1 text-sm font-semibold">
-              Area
+              Area query
               <input
                 className="rounded-sm border border-white/15 bg-trail-surface px-3 py-2 font-normal text-trail-fog"
-                value={draft.area}
-                onChange={(event) => setDraft({ area: event.target.value })}
+                value={draft.query}
+                onChange={(event) => setDraft({ query: event.target.value })}
                 placeholder="e.g. Kyoto, Japan"
                 autoComplete="off"
               />
             </label>
             <label className="grid gap-1 text-sm font-semibold">
               Theme
-              <input
+              <select
                 className="rounded-sm border border-white/15 bg-trail-surface px-3 py-2 font-normal text-trail-fog"
                 value={draft.theme}
-                onChange={(event) => setDraft({ theme: event.target.value })}
-                placeholder="e.g. temples"
-                autoComplete="off"
-              />
+                onChange={(event) => setDraft({ theme: (event.target.value || '') as Theme | '' })}
+              >
+                <option value="">Select a theme</option>
+                {THEMES.map((theme) => (
+                  <option key={theme} value={theme}>
+                    {theme}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="grid gap-1 text-sm font-semibold">
               Duration (minutes)
               <input
                 type="number"
-                min={15}
-                max={1440}
+                min={30}
+                max={240}
                 className="rounded-sm border border-white/15 bg-trail-surface px-3 py-2 font-normal text-trail-fog"
                 value={draft.durationMinutes}
                 onChange={(event) =>
                   setDraft({ durationMinutes: Number(event.target.value) || 90 })
                 }
+              />
+            </label>
+            <label className="grid gap-1 text-sm font-semibold">
+              Radius (meters)
+              <input
+                type="number"
+                min={300}
+                max={800}
+                className="rounded-sm border border-white/15 bg-trail-surface px-3 py-2 font-normal text-trail-fog"
+                value={draft.radiusMeters}
+                onChange={(event) => setDraft({ radiusMeters: Number(event.target.value) || 500 })}
               />
             </label>
             <button

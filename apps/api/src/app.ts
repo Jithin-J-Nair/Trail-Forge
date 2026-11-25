@@ -1,4 +1,9 @@
-import { LlmGenerateInputSchema, TourRequestSchema, type LlmProvider } from '@trailforge/shared';
+import {
+  GenerateRequestSchema,
+  LlmGenerateInputSchema,
+  TourRequestSchema,
+  type LlmProvider,
+} from '@trailforge/shared';
 import cors from 'cors';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
@@ -45,6 +50,15 @@ export function createApp(options: CreateAppOptions = {}) {
     const parsed = TourRequestSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: 'invalid_tour_request', details: parsed.error.flatten() });
+      return;
+    }
+    res.json({ ok: true, request: parsed.data });
+  });
+
+  app.post('/api/v1/generate/validate', (req, res) => {
+    const parsed = GenerateRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'invalid_generate_request', details: parsed.error.flatten() });
       return;
     }
     res.json({ ok: true, request: parsed.data });

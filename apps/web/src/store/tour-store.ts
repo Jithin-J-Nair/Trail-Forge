@@ -1,9 +1,11 @@
+import type { GenerateRequest, Theme } from '@trailforge/shared';
 import { create } from 'zustand';
 
 export type TourDraft = {
-  area: string;
-  theme: string;
-  durationMinutes: number;
+  query: string;
+  theme: Theme | '';
+  durationMinutes: GenerateRequest['durationMinutes'];
+  radiusMeters: GenerateRequest['radiusMeters'];
 };
 
 type TourStore = {
@@ -13,9 +15,10 @@ type TourStore = {
 
 export const useTourStore = create<TourStore>((set) => ({
   draft: {
-    area: '',
+    query: '',
     theme: '',
     durationMinutes: 90,
+    radiusMeters: 500,
   },
   setDraft: (partial) =>
     set((state) => ({
