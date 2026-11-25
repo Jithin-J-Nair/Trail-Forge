@@ -71,3 +71,11 @@
 3. Selection flies the camera to a pin and opens keyboard paths: Tab cycles, arrows step the route, Escape clears; prefers-reduced-motion uses jump cuts.
 4. Profiler note: pin pulse/route opacity mutate existing uniforms/scales only—no Vector3/array allocations inside `useFrame`.
 5. Interview line: “Phase 7 makes the tour explorable—mouse, touch, and keyboard all drive the same selection model.”
+
+## Phase 8 summary
+
+1. Product UI: search panel with theme chips, duration/radius sliders, staged loading + AbortController cancel, and toasts for errors/offline.
+2. Result panel shows route stats, verification bar, synced POI list, claim source tags (“Why trusted?”), and needs_review approve/remove edits.
+3. Client-side GeoJSON/CSV export of verified/human-reviewed items with ODbL metadata and UTF-8 BOM for CSV.
+4. Typed ja/en dictionaries with `?lang=` persistence; mobile uses a bottom sheet for the panel.
+5. Interview line: “Phase 8 closes the loop—search, verify, edit, and export a tour without leaving the browser.”

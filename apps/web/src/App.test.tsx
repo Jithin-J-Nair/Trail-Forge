@@ -7,7 +7,7 @@ vi.mock('./scene/Scene.js', () => ({
 }));
 
 describe('App', () => {
-  it('shows brand header and OSM attribution', () => {
+  it('shows brand and OSM attribution', () => {
     render(<App />);
     expect(screen.getByRole('heading', { name: 'TrailForge' })).toBeInTheDocument();
     expect(screen.getByText('© OpenStreetMap contributors')).toBeInTheDocument();
