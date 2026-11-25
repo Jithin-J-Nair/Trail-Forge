@@ -1,0 +1,25 @@
+services:
+  api:
+    build: .
+    ports:
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      CORS_ORIGIN: http://localhost:5173
+      LLM_PROVIDER: mock
+      # OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - api-cache:/app/apps/api/.cache
+
+  # Optional local LLM
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ['ollama']
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama:/root/.ollama
+
+volumes:
+  api-cache:
+  ollama:

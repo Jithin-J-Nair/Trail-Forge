@@ -87,3 +87,11 @@
 3. Documented before/after bundle and runtime budgets in `docs/PERFORMANCE.md`.
 4. Accessibility: focus styles, aria-live loading, keyboardable controls retained.
 5. Interview line: “Phase 9 keeps the night city fast—code-split WebGL, adaptive quality, and measured budgets.”
+
+## Phase 10 summary — How to explain this project in 2 minutes
+
+1. TrailForge is a production-shaped monorepo that plans walking tours from OpenStreetMap only—never from LLM imagination.
+2. The API geocodes, pulls Overpass, projects to meters, drafts bilingual blurbs, grounds every claim against OSM tags, and orders the route in deterministic code.
+3. The web app shows a performance-aware 3D dusk city, lets you review shaky claims, and exports verified GeoJSON/CSV with ODbL attribution.
+4. CI runs typecheck/lint/test/build/audit; nightly Mock eval writes `docs/EVAL.md`; Docker ships a non-root API with `/api/health`.
+5. Interview closer: “I built the trust boundary first—schemas, grounding, caching, and rate limits—so the 3D tour is impressive and accountable.”

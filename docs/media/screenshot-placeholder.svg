@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="TrailForge screenshot placeholder">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1210"/>
+      <stop offset="100%" stop-color="#1f3a2c"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#g)"/>
+  <text x="480" y="260" fill="#e7eee9" font-family="Georgia, serif" font-size="42" text-anchor="middle">TrailForge</text>
+  <text x="480" y="310" fill="#9bb0a4" font-family="sans-serif" font-size="18" text-anchor="middle">Screenshot / GIF placeholder</text>
+</svg>
