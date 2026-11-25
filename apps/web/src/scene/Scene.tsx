@@ -4,8 +4,13 @@ import type { GenerateResponse } from '@trailforge/shared';
 import type { WebGLRenderer } from 'three';
 import { Buildings } from './Buildings.js';
 import { DebugStats } from './DebugStats.js';
+import { FlyThroughController } from './FlyThrough.js';
 import { IntroCamera } from './IntroCamera.js';
+import { KeyboardNav } from './KeyboardNav.js';
+import { Pins } from './Pins.js';
 import { Roads } from './Roads.js';
+import { RouteLine } from './RouteLine.js';
+import { SelectFlyTo } from './SelectFlyTo.js';
 import { WebGlFallback } from './WebGlFallback.js';
 
 function supportsWebGL(): boolean {
@@ -33,6 +38,7 @@ function Lights() {
 export function Scene({ data, debug = false }: { data: GenerateResponse; debug?: boolean }) {
   const [webglOk, setWebglOk] = useState(true);
   const [gl, setGl] = useState<WebGLRenderer | null>(null);
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     setWebglOk(supportsWebGL());
@@ -54,9 +60,26 @@ export function Scene({ data, debug = false }: { data: GenerateResponse; debug?:
           <IntroCamera />
           <Roads roads={data.scene.roads} />
           <Buildings buildings={data.scene.buildings} />
+          <RouteLine pois={data.pois} orderedPoiIds={data.route.orderedPoiIds} />
+          <Pins pois={data.pois} content={data.content} />
+          <SelectFlyTo pois={data.pois} />
+          <FlyThroughController
+            pois={data.pois}
+            orderedPoiIds={data.route.orderedPoiIds}
+            playing={playing}
+            onStop={() => setPlaying(false)}
+          />
+          <KeyboardNav data={data} />
         </Suspense>
       </Canvas>
       <DebugStats enabled={debug} gl={gl} />
+      <button
+        type="button"
+        className="absolute bottom-3 left-3 z-20 bg-trail-accent px-3 py-1.5 text-xs font-semibold text-white"
+        onClick={() => setPlaying(true)}
+      >
+        Play route
+      </button>
     </div>
   );
 }
