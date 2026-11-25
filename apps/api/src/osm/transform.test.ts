@@ -40,6 +40,24 @@ describe('transformOverpass', () => {
     expect(Math.hypot(round.x - poi.x, round.z - poi.z)).toBeLessThan(1);
   });
 
+  it('builds square footprints from center-only building elements', () => {
+    const scene = transformOverpass(ASAKUSA, {
+      pois: [],
+      highways: [],
+      buildings: [
+        {
+          type: 'way',
+          id: 9,
+          tags: { building: 'yes', 'building:levels': '4' },
+          center: { lat: ASAKUSA.lat, lon: ASAKUSA.lon },
+        },
+      ],
+    });
+    expect(scene.buildings).toHaveLength(1);
+    expect(scene.buildings[0]?.footprint.length).toBeGreaterThanOrEqual(4);
+    expect(scene.buildings[0]?.heightMeters).toBeCloseTo(12.8);
+  });
+
   it('caps buildings at 2000 preferring nearest', () => {
     const many: OverpassBundle = {
       pois: [],
