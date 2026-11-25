@@ -26,9 +26,9 @@ export function RouteLine({ pois, orderedPoiIds }: { pois: PoiLocal[]; orderedPo
         dispose: () => undefined,
       };
     }
-    const pts = ordered.map((p) => new Vector3(p.x, 1.2, p.z));
+    const pts = ordered.map((p) => new Vector3(p.x, 1.4, p.z));
     const curve = new CatmullRomCurve3(pts, false, 'catmullrom', 0.35);
-    const samples = curve.getPoints(64);
+    const samples = curve.getPoints(72);
     const positions = new Float32Array(samples.length * 3);
     for (let i = 0; i < samples.length; i++) {
       const p = samples[i]!;
@@ -38,7 +38,12 @@ export function RouteLine({ pois, orderedPoiIds }: { pois: PoiLocal[]; orderedPo
     }
     const geom = new BufferGeometry();
     geom.setAttribute('position', new Float32BufferAttribute(positions, 3));
-    const mat = new LineBasicMaterial({ color: '#a78bfa', transparent: true, opacity: 0.8 });
+    const mat = new LineBasicMaterial({
+      color: '#8B7BFF',
+      transparent: true,
+      opacity: 0.9,
+      toneMapped: false,
+    });
     const obj = new Line(geom, mat);
     return {
       line: obj,
@@ -58,17 +63,17 @@ export function RouteLine({ pois, orderedPoiIds }: { pois: PoiLocal[]; orderedPo
   useFrame(({ clock }) => {
     const mat = lineRef.current?.material;
     if (mat && !Array.isArray(mat) && 'opacity' in mat) {
-      mat.opacity = 0.55 + Math.sin(clock.elapsedTime * 4) * 0.25;
+      mat.opacity = 0.6 + Math.sin(clock.elapsedTime * 3.5) * 0.25;
     }
   });
 
   return (
     <group>
       {line ? <primitive object={line} /> : null}
-      {markers.map((p) => (
-        <mesh key={p.id} position={[p.x, 2.5, p.z]}>
-          <sphereGeometry args={[0.9, 12, 12]} />
-          <meshBasicMaterial color="#c4b5fd" />
+      {markers.map((p, i) => (
+        <mesh key={p.id} position={[p.x, 2.8, p.z]}>
+          <sphereGeometry args={[1.05, 14, 14]} />
+          <meshBasicMaterial color={i === 0 ? '#4FE3FF' : '#8B7BFF'} toneMapped={false} />
         </mesh>
       ))}
     </group>

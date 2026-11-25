@@ -97,6 +97,14 @@
 4. Accessibility: focus styles, aria-live loading, keyboardable controls retained.
 5. Interview line: “Phase 9 keeps the night city fast—code-split WebGL, adaptive quality, and measured budgets.”
 
+## UI redesign summary (web only)
+
+1. Full-bleed R3F night city with glass floating search/result panels and a bottom route bar (Play/Export); mobile uses bottom sheets.
+2. Tokens: `#05070D` canvas, cyan/violet accents, Inter + Space Grotesk + Noto Sans JP; DEMO DATA badge when fixture/API fallback is active.
+3. Buildings use a procedural window shader; selective bloom on bright emissives; idle auto-orbit stops on interaction / reduced-motion.
+4. Dev fixture ~400 buildings / 8 roads / 8 mixed-status POIs paints the scene when the API is unavailable.
+5. Interview line: “The product UI is a dusk city HUD—trust panels float over the map instead of a dashboard scaffolding the 3D.”
+
 ## Phase 10 summary — How to explain this project in 2 minutes
 
 1. TrailForge is a production-shaped monorepo that plans walking tours from OpenStreetMap only—never from LLM imagination.

@@ -39,7 +39,7 @@ function Pin({ poi }: { poi: PinPoi }) {
   const hovered = useTourSceneStore((s) => s.hoveredPoiId === poi.id);
   const setSelected = useTourSceneStore((s) => s.setSelectedPoiId);
   const setHovered = useTourSceneStore((s) => s.setHoveredPoiId);
-  const color = poi.status === 'verified' ? '#22d3ee' : '#fbbf24';
+  const color = poi.status === 'verified' ? '#4FE3A3' : '#FFB547';
 
   useFrame(({ clock }) => {
     if (!ring.current) return;
@@ -50,14 +50,14 @@ function Pin({ poi }: { poi: PinPoi }) {
 
   return (
     <group position={[poi.x, 0, poi.z]}>
-      <mesh position={[0, 8, 0]}>
-        <cylinderGeometry args={[0.15, 0.15, 16, 6]} />
-        <meshBasicMaterial color={color} transparent opacity={0.85} />
+      <mesh position={[0, 9, 0]}>
+        <cylinderGeometry args={[0.18, 0.18, 18, 8]} />
+        <meshBasicMaterial color={color} transparent opacity={0.95} toneMapped={false} />
       </mesh>
       <mesh
         ref={ring}
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.2, 0]}
+        position={[0, 0.25, 0]}
         onPointerOver={(e) => {
           e.stopPropagation();
           setHovered(poi.id);
@@ -73,17 +73,19 @@ function Pin({ poi }: { poi: PinPoi }) {
         }}
         scale={selected || hovered ? 1.35 : 1}
       >
-        <ringGeometry args={[2.2, 3.2, 24]} />
-        <meshBasicMaterial color={color} transparent opacity={0.9} />
+        <ringGeometry args={[2.4, 3.4, 28]} />
+        <meshBasicMaterial color={color} transparent opacity={0.92} toneMapped={false} />
       </mesh>
-      <Html distanceFactor={60} position={[0, 18, 0]} style={{ pointerEvents: 'none' }}>
+      <Html distanceFactor={55} position={[0, 20, 0]} style={{ pointerEvents: 'none' }}>
         <div
           style={{
             color,
             fontSize: 12,
+            fontFamily: 'Space Grotesk, sans-serif',
+            fontWeight: 600,
             whiteSpace: 'nowrap',
-            textShadow: '0 0 6px #000',
-            opacity: hovered || selected ? 1 : 0.75,
+            textShadow: '0 0 10px rgba(0,0,0,0.85)',
+            opacity: hovered || selected ? 1 : 0.8,
           }}
         >
           {poi.name}

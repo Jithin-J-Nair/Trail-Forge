@@ -4,16 +4,61 @@
 
 :root {
   color-scheme: dark;
+  --trail-bg: #05070d;
+  --trail-surface: rgba(14, 18, 30, 0.65);
+  --trail-border: rgba(255, 255, 255, 0.08);
+  --trail-text: #e8ecf5;
+  --trail-muted: #8a94a8;
+  --trail-cyan: #4fe3ff;
+  --trail-violet: #8b7bff;
+  --trail-verified: #4fe3a3;
+  --trail-review: #ffb547;
+  --trail-radius: 16px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
 }
 
 body {
-  margin: 0;
   min-height: 100vh;
-  font-family: 'IBM Plex Sans', 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif;
-  background:
-    radial-gradient(ellipse at top left, #1f3a2c 0%, transparent 50%),
-    linear-gradient(165deg, #0b1210 0%, #121c18 55%, #0e1613 100%);
-  color: #e7eee9;
+  font-family: Inter, 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif;
+  background: var(--trail-bg);
+  color: var(--trail-text);
+  overflow: hidden;
+}
+
+@layer components {
+  .glass-panel {
+    @apply rounded-glass border border-trail-border bg-trail-surface shadow-glass backdrop-blur-glass;
+  }
+
+  .glass-chip {
+    @apply rounded-full border border-trail-border px-3 py-1.5 text-xs font-medium capitalize tracking-wide transition;
+  }
+
+  .glass-chip-active {
+    @apply border-trail-cyan/50 bg-trail-cyan/15 text-trail-cyan;
+  }
+
+  .glass-input {
+    @apply w-full rounded-xl border border-trail-border bg-black/30 px-3 py-2.5 text-sm text-trail-fog placeholder:text-trail-muted/70;
+  }
+
+  .glass-btn {
+    @apply rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
+  .glass-btn-primary {
+    @apply glass-btn bg-gradient-to-r from-trail-cyan to-trail-violet text-[#05070D] shadow-[0_0_24px_rgba(79,227,255,0.25)];
+  }
+
+  .glass-btn-ghost {
+    @apply glass-btn border border-trail-border bg-white/5 text-trail-fog hover:bg-white/10;
+  }
 }
 
 button,
@@ -24,12 +69,32 @@ textarea {
   transition:
     background-color 160ms ease,
     border-color 160ms ease,
-    opacity 160ms ease;
+    opacity 160ms ease,
+    box-shadow 160ms ease;
 }
 
 :focus-visible {
-  outline: 2px solid #c45c26;
+  outline: 2px solid var(--trail-cyan);
   outline-offset: 3px;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--trail-cyan);
+  border: 2px solid #05070d;
+  box-shadow: 0 0 12px rgba(79, 227, 255, 0.55);
+  cursor: pointer;
 }
 
 @media (prefers-reduced-motion: reduce) {

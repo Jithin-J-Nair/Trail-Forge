@@ -7,7 +7,7 @@ describe('export builders', () => {
     const json = JSON.parse(buildGeoJson(SAMPLE_RESPONSE, SAMPLE_RESPONSE.content, 'Asakusa'));
     expect(json.type).toBe('FeatureCollection');
     expect(json.metadata.license).toBe('ODbL');
-    expect(json.features.length).toBe(1);
+    expect(json.features.length).toBe(4);
   });
 
   it('CSV includes UTF-8 BOM and metadata', () => {

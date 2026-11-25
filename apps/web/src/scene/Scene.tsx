@@ -1,4 +1,5 @@
 import { Canvas } from '@react-three/fiber';
+import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import type { GenerateResponse } from '@trailforge/shared';
 import type { WebGLRenderer } from 'three';
@@ -26,22 +27,33 @@ function supportsWebGL(): boolean {
 function Lights() {
   return (
     <>
-      <color attach="background" args={['#070b0a']} />
-      <fog attach="fog" args={['#070b0a', 120, 420]} />
-      <hemisphereLight args={['#94a3b8', '#0f172a', 0.55]} />
-      <directionalLight position={[60, 120, 40]} intensity={1.1} color="#c4b5fd" castShadow />
-      <pointLight position={[-40, 40, -20]} intensity={0.6} color="#22d3ee" />
-      <pointLight position={[50, 30, 40]} intensity={0.45} color="#a78bfa" />
+      <color attach="background" args={['#05070D']} />
+      <fog attach="fog" args={['#05070D', 90, 380]} />
+      <hemisphereLight args={['#1a2744', '#05070D', 0.45]} />
+      <directionalLight position={[40, 100, 20]} intensity={0.35} color="#8B7BFF" />
+      <pointLight position={[-50, 35, -30]} intensity={0.9} color="#4FE3FF" distance={220} />
+      <pointLight position={[60, 28, 50]} intensity={0.55} color="#8B7BFF" distance={200} />
     </>
   );
 }
 
-export function Scene({ data, debug = false }: { data: GenerateResponse; debug?: boolean }) {
+export function Scene({
+  data,
+  debug = false,
+  playing = false,
+  onPlayStop,
+}: {
+  data: GenerateResponse;
+  debug?: boolean;
+  playing?: boolean;
+  onPlayStop?: () => void;
+}) {
   const [webglOk, setWebglOk] = useState(true);
   const [gl, setGl] = useState<WebGLRenderer | null>(null);
-  const [playing, setPlaying] = useState(false);
   const quality = useMemo(() => probeQuality(), []);
   const dpr = dprForQuality(quality);
+  const reduceMotion =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   useEffect(() => {
     setWebglOk(supportsWebGL());
@@ -50,12 +62,12 @@ export function Scene({ data, debug = false }: { data: GenerateResponse; debug?:
   if (!webglOk) return <WebGlFallback />;
 
   return (
-    <div className="relative h-[420px] w-full overflow-hidden border border-white/10 bg-black">
+    <div className="absolute inset-0 h-full w-full overflow-hidden bg-trail-bg">
       <Canvas
         dpr={dpr}
-        gl={{ antialias: quality !== 'low', powerPreference: 'high-performance' }}
-        camera={{ position: [0, 180, 220], fov: 45, near: 1, far: 800 }}
-        shadows={quality === 'high'}
+        gl={{ antialias: quality !== 'low', powerPreference: 'high-performance', alpha: false }}
+        camera={{ position: [0, 180, 220], fov: 42, near: 1, far: 900 }}
+        shadows={false}
         onCreated={({ gl: renderer }) => setGl(renderer)}
       >
         <Suspense fallback={null}>
@@ -70,19 +82,22 @@ export function Scene({ data, debug = false }: { data: GenerateResponse; debug?:
             pois={data.pois}
             orderedPoiIds={data.route.orderedPoiIds}
             playing={playing}
-            onStop={() => setPlaying(false)}
+            onStop={() => onPlayStop?.()}
           />
           <KeyboardNav data={data} />
+          {quality !== 'low' && !reduceMotion ? (
+            <EffectComposer multisampling={0}>
+              <Bloom
+                intensity={0.85}
+                luminanceThreshold={0.55}
+                luminanceSmoothing={0.3}
+                mipmapBlur
+              />
+            </EffectComposer>
+          ) : null}
         </Suspense>
       </Canvas>
       <DebugStats enabled={debug} gl={gl} />
-      <button
-        type="button"
-        className="absolute bottom-3 left-3 z-20 bg-trail-accent px-3 py-1.5 text-xs font-semibold text-white"
-        onClick={() => setPlaying(true)}
-      >
-        Play route
-      </button>
     </div>
   );
 }
