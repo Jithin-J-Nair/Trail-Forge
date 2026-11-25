@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 body {
@@ -11,9 +11,9 @@ body {
   min-height: 100vh;
   font-family: 'IBM Plex Sans', system-ui, sans-serif;
   background:
-    radial-gradient(ellipse at top left, #dfece3 0%, transparent 55%),
-    linear-gradient(160deg, #f4faf6 0%, #e4efe8 45%, #d5e4da 100%);
-  color: #1a2e1f;
+    radial-gradient(ellipse at top left, #1f3a2c 0%, transparent 50%),
+    linear-gradient(165deg, #0b1210 0%, #121c18 55%, #0e1613 100%);
+  color: #e7eee9;
 }
 
 :focus-visible {

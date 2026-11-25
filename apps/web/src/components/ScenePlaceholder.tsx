@@ -31,7 +31,7 @@ export function ScenePlaceholder() {
     return (
       <div
         role="status"
-        className="flex h-64 items-center justify-center rounded-sm border border-trail-moss/20 bg-trail-mist/60 px-6 text-center text-sm text-trail-ink"
+        className="flex h-64 items-center justify-center border border-white/10 bg-trail-surface px-6 text-center text-sm text-trail-muted"
       >
         WebGL is unavailable in this browser. The 3D city scene cannot be shown.
       </div>
@@ -39,7 +39,7 @@ export function ScenePlaceholder() {
   }
 
   return (
-    <div className="h-64 overflow-hidden rounded-sm border border-trail-moss/20 bg-trail-ink/90">
+    <div className="h-64 overflow-hidden border border-white/10 bg-black/40">
       <Canvas camera={{ position: [3, 3, 3], fov: 45 }} aria-label="Placeholder 3D scene">
         <ambientLight intensity={0.6} />
         <directionalLight position={[4, 6, 2]} intensity={1.1} />

@@ -14,12 +14,16 @@ Plan themed walking tours from real OpenStreetMap places, with grounded bilingua
 
 ```bash
 npm install
+npm run dev          # web + api concurrently
+npm run build
 npm run typecheck
 npm run lint
 npm test
-npm run dev:web
-npm run dev:api
 ```
+
+Copy `apps/api/.env.example` to `apps/api/.env` for local overrides (`CORS_ORIGIN`, LLM keys).
+
+Vite proxies `/api` → `http://localhost:3001` (e.g. `GET /api/health` → `{ "status": "ok" }`).
 
 ## Attribution
 

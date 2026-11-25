@@ -8,11 +8,12 @@
 - English and Japanese UI/copy placeholders are acceptable in Phase 1.
 - Phase 1 does not call Overpass/Nominatim, does not build a full 3D city, and does not run real LLM generation beyond the Mock provider.
 - LLM API keys never ship to the browser; all provider code lives in `apps/api`.
+- Local API CORS origin defaults to `http://localhost:5173`; Vite proxies `/api` to the API.
 
 ## Phase 1 summary
 
-1. Scaffolded an npm-workspaces monorepo (`apps/web`, `apps/api`, `packages/shared`) with strict TypeScript, Vitest, ESLint, and Prettier.
-2. Shared Zod schemas validate tour requests and LLM I/O; the API wires Express, Helmet, rate limiting, Pino, and an LRU cache behind a `/health` check.
-3. Three LLM providers implement one interface: Mock (works in CI), Claude stub, and Ollama stub.
-4. The web app is a minimal Vite/React/Tailwind form plus a tiny R3F placeholder scene, with “© OpenStreetMap contributors” in the footer (and README).
-5. Interview line: “Phase 1 proves the production skeleton—typed contracts, server-only LLM boundary, and CI-green tooling—before any OSM or generation logic.”
+1. Built an npm-workspaces monorepo with strict TypeScript, ESLint, Prettier, Vitest, concurrent `npm run dev`, and GitHub Actions CI.
+2. The API validates env with Zod at boot, serves `/api/health` → `{status:"ok"}`, and wires Helmet, CORS, Pino, rate limits, LRU cache, plus Mock/Claude/Ollama LLM providers.
+3. The web app is a dark Tailwind shell (header + OSM footer) with a tiny R3F placeholder; Vite proxies `/api` so the browser can hit health without CORS friction.
+4. Shared Zod schemas are the contract between web, API, and LLM I/O; secrets stay server-side.
+5. Interview line: “Phase 1 is the production skeleton—typed contracts, proxied health check, fail-fast env, and CI—before any OSM fetch or grounded generation.”

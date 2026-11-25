@@ -4,17 +4,16 @@ import { createApp } from './app.js';
 import { MockLlmProvider } from './llm/mock-provider.js';
 
 describe('API health', () => {
-  it('returns ok from /health', async () => {
+  it('returns {status:"ok"} from /api/health', async () => {
     const app = createApp({ llm: new MockLlmProvider() });
-    const res = await request(app).get('/health');
+    const res = await request(app).get('/api/health');
     expect(res.status).toBe(200);
-    expect(res.body.ok).toBe(true);
-    expect(res.body.llm).toBe('mock');
+    expect(res.body).toEqual({ status: 'ok' });
   });
 
   it('validates tour requests with shared Zod schema', async () => {
     const app = createApp({ llm: new MockLlmProvider() });
-    const res = await request(app).post('/v1/tour/validate').send({
+    const res = await request(app).post('/api/v1/tour/validate').send({
       area: 'Osaka',
       theme: 'food',
       durationMinutes: 90,

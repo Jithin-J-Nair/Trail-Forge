@@ -7,17 +7,19 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "concurrently -n web,api -c cyan,magenta \"npm run dev -w @trailforge/web\" \"npm run dev -w @trailforge/api\"",
+    "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint . --fix && prettier --write .",
     "test": "npm run test --workspaces --if-present",
     "dev:web": "npm run dev -w @trailforge/web",
-    "dev:api": "npm run dev -w @trailforge/api",
-    "build": "npm run build --workspaces --if-present"
+    "dev:api": "npm run dev -w @trailforge/api"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@types/node": "^22.13.10",
+    "concurrently": "^9.1.2",
     "eslint": "^9.22.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-react-hooks": "^5.2.0",

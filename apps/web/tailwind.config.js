@@ -5,9 +5,10 @@ export default {
     extend: {
       colors: {
         trail: {
-          ink: '#1a2e1f',
-          moss: '#3d5c45',
-          mist: '#e8f0ea',
+          bg: '#0b1210',
+          surface: '#16211c',
+          fog: '#e7eee9',
+          muted: '#9bb0a4',
           accent: '#c45c26',
         },
       },
