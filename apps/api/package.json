@@ -12,6 +12,7 @@
     "osm:try": "tsx src/osm/try.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.14.0",
     "@trailforge/shared": "*",
     "cors": "^2.8.5",
     "express": "^4.21.2",

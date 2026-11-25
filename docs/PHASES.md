@@ -39,3 +39,11 @@
 3. Two-layer cache (memory LRU + `.cache/` JSON, 24h TTL) keyed by rounded center+radius+theme; `npm run -w @trailforge/api osm:try` prints counts and proves cache hits.
 4. Unit tests use recorded fixtures only—no live network in CI.
 5. Interview line: “Phase 3 turns a place name into a typed OSM scene with respectful rate limits and a disk cache so demos stay fast.”
+
+## Phase 4 summary
+
+1. Added `apps/api/src/ai` with `generateJson` providers (Mock / Claude / Ollama via `LLM_PROVIDER`), delimited OSM data prompts, and schema-repair retry.
+2. `grounding.ts` enforces poiId/key existence, grounded numbers/URLs, missing-source review, and rejects hallucinated places.
+3. `route.ts` builds a deterministic nearest-neighbor + 2-opt path with 1.3× detour and 80 m/min walking budget trimming.
+4. Tests cover each grounding rule (including injection-style tags), route trim/order, and Mock repair-retry; CI uses Mock.
+5. Interview line: “Phase 4 is the trust layer—the LLM may draft, but only OSM-cited claims survive, and the route is computed in code.”
