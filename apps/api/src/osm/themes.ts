@@ -1,35 +1,28 @@
 import type { Theme } from '@trailforge/shared';
 
-/** Overpass tag filters per tour theme. */
+/** Overpass tag filters per tour theme — nwr + out center on the caller. */
 export const THEME_OVERPASS: Record<Theme, string> = {
   culture: `(
-  node["tourism"~"^(museum|attraction|artwork)$"](around:{radius},{lat},{lon});
-  way["tourism"~"^(museum|attraction|artwork)$"](around:{radius},{lat},{lon});
-  node["historic"](around:{radius},{lat},{lon});
-  way["historic"](around:{radius},{lat},{lon});
-  node["amenity"="place_of_worship"](around:{radius},{lat},{lon});
-  way["amenity"="place_of_worship"](around:{radius},{lat},{lon});
+  nwr["tourism"~"^(museum|attraction|artwork)$"](around:{radius},{lat},{lon});
+  nwr["historic"](around:{radius},{lat},{lon});
+  nwr["amenity"="place_of_worship"](around:{radius},{lat},{lon});
 );`,
   food: `(
-  node["amenity"~"^(restaurant|cafe|fast_food|bar|pub|biergarten)$"](around:{radius},{lat},{lon});
-  way["amenity"~"^(restaurant|cafe|fast_food|bar|pub|biergarten)$"](around:{radius},{lat},{lon});
-  node["amenity"="marketplace"](around:{radius},{lat},{lon});
+  nwr["amenity"~"^(restaurant|cafe|fast_food|bar|pub|biergarten)$"](around:{radius},{lat},{lon});
+  nwr["amenity"="marketplace"](around:{radius},{lat},{lon});
 );`,
   nature: `(
-  node["leisure"~"^(park|garden|nature_reserve)$"](around:{radius},{lat},{lon});
-  way["leisure"~"^(park|garden|nature_reserve)$"](around:{radius},{lat},{lon});
-  node["natural"~"^(wood|water|peak)$"](around:{radius},{lat},{lon});
-  way["natural"~"^(wood|water)$"](around:{radius},{lat},{lon});
+  nwr["leisure"~"^(park|garden|nature_reserve)$"](around:{radius},{lat},{lon});
+  nwr["natural"~"^(wood|water|peak)$"](around:{radius},{lat},{lon});
 );`,
   shopping: `(
-  node["shop"](around:{radius},{lat},{lon});
-  way["shop"](around:{radius},{lat},{lon});
-  node["amenity"="marketplace"](around:{radius},{lat},{lon});
+  nwr["shop"](around:{radius},{lat},{lon});
+  nwr["tourism"](around:{radius},{lat},{lon});
+  nwr["amenity"="marketplace"](around:{radius},{lat},{lon});
 );`,
   nightlife: `(
-  node["amenity"~"^(bar|pub|nightclub|biergarten)$"](around:{radius},{lat},{lon});
-  way["amenity"~"^(bar|pub|nightclub|biergarten)$"](around:{radius},{lat},{lon});
-  node["tourism"="hostel"](around:{radius},{lat},{lon});
+  nwr["amenity"~"^(bar|pub|nightclub|biergarten)$"](around:{radius},{lat},{lon});
+  nwr["tourism"="hostel"](around:{radius},{lat},{lon});
 );`,
 };
 

@@ -18,6 +18,12 @@ const Scene = lazy(async () => {
 
 type Stage = 'locating' | 'fetching' | 'writing' | 'building';
 
+function isDemoMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (import.meta.env.VITE_DEMO_MODE === 'true') return true;
+  return new URLSearchParams(window.location.search).get('demo') === '1';
+}
+
 export function App() {
   const { draft } = useTourStore();
   const { response, setResponse, setUiLanguage, setStatus } = useTourSceneStore();
@@ -26,6 +32,7 @@ export function App() {
   const [content, setContent] = useState<ApprovedContent[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(true);
+  const [demoActive, setDemoActive] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   const debug = useMemo(() => {
@@ -41,9 +48,11 @@ export function App() {
   }, [lang, setUiLanguage]);
 
   useEffect(() => {
-    // Demo fixture until first generate
-    setResponse(SAMPLE_RESPONSE);
-    setContent(SAMPLE_RESPONSE.content.map((c) => ({ ...c })));
+    if (!isDemoMode()) return;
+    const demo: GenerateResponse = { ...SAMPLE_RESPONSE, demo: true };
+    setResponse(demo);
+    setContent(demo.content.map((c) => ({ ...c })));
+    setDemoActive(true);
   }, [setResponse]);
 
   const runGenerate = useCallback(async () => {
@@ -60,6 +69,7 @@ export function App() {
     abortRef.current = controller;
     setStatus('loading');
     setStage('locating');
+    setDemoActive(false);
     const timers = [
       window.setTimeout(() => setStage('fetching'), 400),
       window.setTimeout(() => setStage('writing'), 900),
@@ -84,17 +94,21 @@ export function App() {
         throw new Error(body?.error?.message ?? `HTTP ${res.status}`);
       }
       const data = (await res.json()) as GenerateResponse;
-      setResponse(data.pois.length ? data : SAMPLE_RESPONSE);
-      setContent((data.pois.length ? data : SAMPLE_RESPONSE).content.map((c) => ({ ...c })));
+      setResponse(data);
+      setContent(data.content.map((c) => ({ ...c })));
       setStatus('ready');
       setSheetOpen(true);
+      if (data.message) setToast(data.message);
     } catch (err) {
       if ((err as Error).name === 'AbortError') return;
       setStatus('error', (err as Error).message);
-      setToast(t(lang, 'errorRetry'));
-      // Keep fixture scene usable offline / when OSM is blocked
-      setResponse(SAMPLE_RESPONSE);
-      setContent(SAMPLE_RESPONSE.content.map((c) => ({ ...c })));
+      setToast((err as Error).message || t(lang, 'errorRetry'));
+      if (isDemoMode()) {
+        const demo: GenerateResponse = { ...SAMPLE_RESPONSE, demo: true };
+        setResponse(demo);
+        setContent(demo.content.map((c) => ({ ...c })));
+        setDemoActive(true);
+      }
     } finally {
       timers.forEach(clearTimeout);
       setStage(null);
@@ -122,6 +136,14 @@ export function App() {
               </label>
             </div>
             <p className="max-w-xl text-base text-trail-muted">{t(lang, 'appTagline')}</p>
+            {demoActive || response?.demo ? (
+              <p
+                className="mt-2 inline-block border border-amber-400/60 bg-amber-500/20 px-2 py-1 text-xs font-semibold tracking-wide text-amber-200"
+                role="status"
+              >
+                DEMO DATA
+              </p>
+            ) : null}
           </section>
 
           <div className="hidden md:block">
@@ -147,7 +169,11 @@ export function App() {
               >
                 <Scene data={response} debug={debug} />
               </Suspense>
-            ) : null}
+            ) : (
+              <div className="flex h-[420px] items-center justify-center border border-white/10 bg-black/40 text-sm text-trail-muted">
+                Generate a tour to load the live map scene.
+              </div>
+            )}
           </section>
         </div>
 

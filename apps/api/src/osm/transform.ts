@@ -137,16 +137,30 @@ export function transformOverpass(center: LonLat, bundle: OverpassBundle): Trans
   const buildings = bundle.buildings
     .map((el) => {
       const c = elementCenter(el);
-      if (!c || !el.geometry || el.geometry.length < 3) return null;
-      const footprint = el.geometry.map((g) => {
-        const local = lonLatToLocalMeters(center, g.lon, g.lat);
-        return [local.x, local.z] as [number, number];
-      });
-      const simplified = simplifyPolyline(footprint, 0.5);
-      if (!isValidPolygon(simplified)) return null;
+      if (!c) return null;
+      let footprint: [number, number][];
+      if (el.geometry && el.geometry.length >= 3) {
+        const raw = el.geometry.map((g) => {
+          const local = lonLatToLocalMeters(center, g.lon, g.lat);
+          return [local.x, local.z] as [number, number];
+        });
+        footprint = simplifyPolyline(raw, 0.5);
+      } else {
+        // Center-only Overpass responses (faster / less 504): approximate box.
+        const local = lonLatToLocalMeters(center, c.lon, c.lat);
+        const s = 6;
+        footprint = [
+          [local.x - s, local.z - s],
+          [local.x + s, local.z - s],
+          [local.x + s, local.z + s],
+          [local.x - s, local.z + s],
+          [local.x - s, local.z - s],
+        ];
+      }
+      if (!isValidPolygon(footprint)) return null;
       return {
         id: `${el.type}/${el.id}`,
-        footprint: simplified,
+        footprint,
         heightMeters: deriveHeightMeters(el.tags),
         dist: dist2(center, c),
       };

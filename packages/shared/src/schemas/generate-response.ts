@@ -29,6 +29,10 @@ export const GenerateResponseSchema = z.object({
   content: z.array(PoiContentSchema),
   route: RoutePlanSchema,
   verification: VerificationSummarySchema,
+  /** Present when the area resolved but no themed POIs matched. */
+  message: z.string().min(1).optional(),
+  /** True when the response is fixture data (DEMO_MODE). */
+  demo: z.boolean().optional(),
 });
 
 export type GenerateResponse = z.infer<typeof GenerateResponseSchema>;

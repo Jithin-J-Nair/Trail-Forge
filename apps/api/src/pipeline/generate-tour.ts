@@ -9,8 +9,6 @@ import { groundLlmDraft } from '../ai/grounding.js';
 import type { LlmJsonProvider } from '../ai/provider.js';
 import { planRoute } from '../ai/route.js';
 import { ApiError } from '../http/errors.js';
-import { logger } from '../logger.js';
-import { lookupDemoCenter } from '../osm/demo-centers.js';
 import { OsmNotFoundError, OsmUpstreamError } from '../osm/errors.js';
 import { fetchAreaScene, type FetchAreaResult } from '../osm/fetch-area.js';
 
@@ -48,22 +46,10 @@ export async function generateTour(
     if (err instanceof OsmNotFoundError) {
       throw new ApiError(404, 'area_not_found', err.message);
     }
-    const demo = lookupDemoCenter(request.query);
-    if (demo && err instanceof OsmUpstreamError) {
-      logger.warn({ err: err.message }, 'OSM upstream failed; using demo empty scene');
-      scene = {
-        center: { lon: demo.lon, lat: demo.lat },
-        pois: [],
-        buildings: [],
-        roads: [],
-        displayName: demo.displayName,
-        fromCache: false,
-      };
-    } else if (err instanceof OsmUpstreamError) {
+    if (err instanceof OsmUpstreamError) {
       throw new ApiError(502, 'upstream_error', 'Map data upstream failed');
-    } else {
-      throw err;
     }
+    throw err;
   }
   const geocodeMs = now() - geoStart;
   const overpassMs = geocodeMs;
@@ -77,6 +63,11 @@ export async function generateTour(
   });
   const llmMs = now() - llmStart;
 
+  const emptyMessage =
+    scene.pois.length === 0
+      ? 'No places found for this theme nearby. Try another theme or a larger radius.'
+      : undefined;
+
   const response = GenerateResponseSchema.parse({
     center: scene.center,
     scene: { buildings: scene.buildings, roads: scene.roads },
@@ -84,6 +75,7 @@ export async function generateTour(
     content: grounded.content,
     route,
     verification: grounded.verification,
+    ...(emptyMessage ? { message: emptyMessage } : {}),
   });
 
   return {

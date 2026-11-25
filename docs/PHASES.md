@@ -30,15 +30,24 @@
 
 ## Phase 3 assumptions
 
-- Nominatim may return HTTP 403 from some cloud egress IPs; `osm:try` then uses a documented Asakusa demo center and may fall back to the recorded Overpass fixture while still exercising the disk cache.
+- Nominatim may return HTTP 403 from some cloud egress IPs; geocode falls back to Photon (`photon.komoot.io`) with the same TrailForge User-Agent.
+- Overpass public mirrors rate-limit or 504 under parallel load; the client tries mail.ru → kumi → overpass-api.de, form then raw body, sequentially.
+- Building footprints prefer `out geom`; when mirrors only return `out center`, transform synthesizes ~12m boxes at real OSM centers so the scene stays dense.
+- Fixtures/`SAMPLE_RESPONSE` are tests-only unless `VITE_DEMO_MODE=true` or `?demo=1` (UI shows a **DEMO DATA** badge). Generate never silently substitutes sample data.
 
 ## Phase 3 summary
 
-1. Added `apps/api/src/osm`: Nominatim geocode (1 req/s, 8s timeout), Overpass POI/building/highway fetch with retry + fallback endpoint.
-2. `transform.ts` projects to local meters, drops unnamed POIs, caps (12 POIs / 2000 buildings), derives heights, Douglas–Peucker simplifies footprints.
-3. Two-layer cache (memory LRU + `.cache/` JSON, 24h TTL) keyed by rounded center+radius+theme; `npm run -w @trailforge/api osm:try` prints counts and proves cache hits.
+1. Added `apps/api/src/osm`: Nominatim+Photon geocode (1 req/s, 8s timeout), Overpass `nwr` POI/building/highway fetch with retry + multi-endpoint.
+2. `transform.ts` projects to local meters, keeps POIs with `name`/`name:en`/`name:ja`, caps (12 POIs / 2000 buildings), derives heights, Douglas–Peucker simplifies footprints.
+3. Two-layer cache (memory LRU + `.cache/` JSON, 24h TTL); `npm run -w apps/api osm:try` logs per-stage counts; `npm run smoke:live` hits Asakusa/Shibuya/Gion (not CI).
 4. Unit tests use recorded fixtures only—no live network in CI.
 5. Interview line: “Phase 3 turns a place name into a typed OSM scene with respectful rate limits and a disk cache so demos stay fast.”
+
+## Phase 3 re-harden summary
+
+1. Root cause: Nominatim HTTP 403 on cloud egress + `osm:try`/`generate` silent demo/fixture/SAMPLE_RESPONSE masking made empty scenes look “successful.”
+2. Fix: Photon fallback; Overpass `nwr` + shopping `tourism=*`; honest 502 on Overpass failure; empty POIs → 200 + `message`; SAMPLE only under DEMO_MODE with badge.
+3. Acceptance: live Asakusa vs Shibuya return different named places and hundreds of buildings when upstream is reachable.
 
 ## Phase 4 summary
 
@@ -53,7 +62,7 @@
 1. Added `POST /api/generate` that runs geocode → Overpass → transform → LLM → grounding → route and returns a Zod-validated `GenerateResponse`.
 2. Errors use `{error:{code,message}}` with 400/404/429/502/504/500; request-id middleware; stage timings in logs; 10/min generate rate limit; in-flight dedupe.
 3. Integration tests with fixtures + MockAiProvider cover happy path, invalid input, not found, upstream failure, and rate limit.
-4. Assumption: when Nominatim is blocked, known demo queries may degrade to an empty demo scene rather than 502.
+4. Assumption: OSM upstream failures return typed 502 (no empty demo scene); zero themed POIs still return 200 with `message`.
 5. Interview line: “Phase 5 exposes one public generate endpoint with honest errors and a server-only LLM boundary.”
 
 ## Phase 6 summary
