@@ -9,13 +9,19 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
+import type { LlmJsonProvider } from './ai/provider.js';
 import { responseCache } from './cache.js';
+import { requestIdMiddleware } from './http/request-id.js';
 import { createLlmProvider } from './llm/create-provider.js';
 import { logger } from './logger.js';
+import type { GenerateDeps } from './pipeline/generate-tour.js';
+import { createGenerateRouter } from './routes/generate.js';
 
 export type CreateAppOptions = {
   llm?: LlmProvider;
+  ai?: LlmJsonProvider;
   corsOrigin?: string;
+  generateDeps?: GenerateDeps;
 };
 
 export function createApp(options: CreateAppOptions = {}) {
@@ -27,6 +33,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use(helmet());
   app.use(cors({ origin: corsOrigin }));
   app.use(express.json({ limit: '32kb' }));
+  app.use(requestIdMiddleware);
   app.use(
     pinoHttp({
       logger,
@@ -45,6 +52,16 @@ export function createApp(options: CreateAppOptions = {}) {
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
+
+  const generateLlm = options.ai ?? options.generateDeps?.llm;
+  app.use(
+    '/api',
+    createGenerateRouter({
+      ...(generateLlm ? { llm: generateLlm } : {}),
+      ...(options.generateDeps?.loadScene ? { loadScene: options.generateDeps.loadScene } : {}),
+      ...(options.generateDeps?.fetchImpl ? { fetchImpl: options.generateDeps.fetchImpl } : {}),
+    }),
+  );
 
   app.post('/api/v1/tour/validate', (req, res) => {
     const parsed = TourRequestSchema.safeParse(req.body);
