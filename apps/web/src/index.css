@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at top left, #dfece3 0%, transparent 55%),
+    linear-gradient(160deg, #f4faf6 0%, #e4efe8 45%, #d5e4da 100%);
+  color: #1a2e1f;
+}
+
+:focus-visible {
+  outline: 2px solid #c45c26;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
