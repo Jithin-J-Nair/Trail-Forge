@@ -1,0 +1,74 @@
+{
+  "pois": [
+    {
+      "type": "node",
+      "id": 1,
+      "lat": 35.7148,
+      "lon": 139.7967,
+      "tags": {
+        "name": "Senso-ji",
+        "tourism": "attraction",
+        "historic": "temple",
+        "website": "https://example.com"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2,
+      "lat": 35.715,
+      "lon": 139.7969,
+      "tags": { "amenity": "cafe" }
+    },
+    {
+      "type": "node",
+      "id": 3,
+      "lat": 35.7149,
+      "lon": 139.7965,
+      "tags": {
+        "name": "Nakamise",
+        "shop": "gift",
+        "opening_hours": "10:00-18:00",
+        "cuisine": "japanese",
+        "phone": "+81"
+      }
+    }
+  ],
+  "buildings": [
+    {
+      "type": "way",
+      "id": 10,
+      "tags": { "building": "yes", "building:levels": "3" },
+      "geometry": [
+        { "lat": 35.7147, "lon": 139.7966 },
+        { "lat": 35.7147, "lon": 139.7968 },
+        { "lat": 35.7149, "lon": 139.7968 },
+        { "lat": 35.7149, "lon": 139.7966 },
+        { "lat": 35.7147, "lon": 139.7966 }
+      ]
+    },
+    {
+      "type": "way",
+      "id": 11,
+      "tags": { "building": "yes", "height": "18 m" },
+      "geometry": [
+        { "lat": 35.7151, "lon": 139.7964 },
+        { "lat": 35.7151, "lon": 139.79655 },
+        { "lat": 35.7152, "lon": 139.79655 },
+        { "lat": 35.7152, "lon": 139.7964 },
+        { "lat": 35.7151, "lon": 139.7964 }
+      ]
+    }
+  ],
+  "highways": [
+    {
+      "type": "way",
+      "id": 20,
+      "tags": { "highway": "residential" },
+      "geometry": [
+        { "lat": 35.7146, "lon": 139.796 },
+        { "lat": 35.7148, "lon": 139.7967 },
+        { "lat": 35.715, "lon": 139.797 }
+      ]
+    }
+  ]
+}

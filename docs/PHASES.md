@@ -27,3 +27,15 @@
 3. Both apps import `@trailforge/shared`: web form drafts use `GenerateRequest`/`Theme`; API validates via `/api/v1/generate/validate`.
 4. Phase 1 TourRequest and LLM schemas remain; Phase 2 is the typed domain layer only—no OSM fetch or LLM generation yet.
 5. Interview line: “Phase 2 locks the data contracts and local meter projection so later Overpass and 3D work share one validated shape.”
+
+## Phase 3 assumptions
+
+- Nominatim may return HTTP 403 from some cloud egress IPs; `osm:try` then uses a documented Asakusa demo center and may fall back to the recorded Overpass fixture while still exercising the disk cache.
+
+## Phase 3 summary
+
+1. Added `apps/api/src/osm`: Nominatim geocode (1 req/s, 8s timeout), Overpass POI/building/highway fetch with retry + fallback endpoint.
+2. `transform.ts` projects to local meters, drops unnamed POIs, caps (12 POIs / 2000 buildings), derives heights, Douglas–Peucker simplifies footprints.
+3. Two-layer cache (memory LRU + `.cache/` JSON, 24h TTL) keyed by rounded center+radius+theme; `npm run -w @trailforge/api osm:try` prints counts and proves cache hits.
+4. Unit tests use recorded fixtures only—no live network in CI.
+5. Interview line: “Phase 3 turns a place name into a typed OSM scene with respectful rate limits and a disk cache so demos stay fast.”

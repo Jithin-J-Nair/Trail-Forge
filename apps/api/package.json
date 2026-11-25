@@ -8,7 +8,8 @@
     "start": "node --import tsx src/index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "osm:try": "tsx src/osm/try.ts"
   },
   "dependencies": {
     "@trailforge/shared": "*",
