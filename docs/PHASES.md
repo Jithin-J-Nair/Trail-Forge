@@ -47,3 +47,11 @@
 3. `route.ts` builds a deterministic nearest-neighbor + 2-opt path with 1.3× detour and 80 m/min walking budget trimming.
 4. Tests cover each grounding rule (including injection-style tags), route trim/order, and Mock repair-retry; CI uses Mock.
 5. Interview line: “Phase 4 is the trust layer—the LLM may draft, but only OSM-cited claims survive, and the route is computed in code.”
+
+## Phase 5 summary
+
+1. Added `POST /api/generate` that runs geocode → Overpass → transform → LLM → grounding → route and returns a Zod-validated `GenerateResponse`.
+2. Errors use `{error:{code,message}}` with 400/404/429/502/504/500; request-id middleware; stage timings in logs; 10/min generate rate limit; in-flight dedupe.
+3. Integration tests with fixtures + MockAiProvider cover happy path, invalid input, not found, upstream failure, and rate limit.
+4. Assumption: when Nominatim is blocked, known demo queries may degrade to an empty demo scene rather than 502.
+5. Interview line: “Phase 5 exposes one public generate endpoint with honest errors and a server-only LLM boundary.”
