@@ -55,3 +55,11 @@
 3. Integration tests with fixtures + MockAiProvider cover happy path, invalid input, not found, upstream failure, and rate limit.
 4. Assumption: when Nominatim is blocked, known demo queries may degrade to an empty demo scene rather than 502.
 5. Interview line: “Phase 5 exposes one public generate endpoint with honest errors and a server-only LLM boundary.”
+
+## Phase 6 summary
+
+1. Added R3F `Scene` with dusk/neon lighting, fog, clamped DPR, OrbitControls limits, and intro camera ease (skipped under prefers-reduced-motion).
+2. Buildings merge into one extruded mesh with height vertex colors; roads are a single LineSegments layer over a dark grid ground.
+3. Zustand `tour-scene-store` holds response/selection/language/status; `?debug=1` shows FPS/draw-call overlay; WebGL fallback message included.
+4. Fixture data drives the preview; geometries dispose on unmount to avoid leaks.
+5. Interview line: “Phase 6 proves the 3D performance budget—merged buildings, few draw calls, and a readable night city shell.”

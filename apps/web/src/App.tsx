@@ -1,13 +1,25 @@
 import { ThemeSchema, type Theme } from '@trailforge/shared';
+import { useEffect, useMemo } from 'react';
 import { Footer } from './components/Footer.js';
 import { Header } from './components/Header.js';
-import { ScenePlaceholder } from './components/ScenePlaceholder.js';
+import { SAMPLE_RESPONSE } from './fixtures/sample-response.js';
+import { Scene } from './scene/Scene.js';
+import { useTourSceneStore } from './scene/tour-scene-store.js';
 import { useTourStore } from './store/tour-store.js';
 
 const THEMES = ThemeSchema.options;
 
 export function App() {
   const { draft, setDraft } = useTourStore();
+  const { response, setResponse } = useTourSceneStore();
+  const debug = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).get('debug') === '1';
+  }, []);
+
+  useEffect(() => {
+    setResponse(SAMPLE_RESPONSE);
+  }, [setResponse]);
 
   return (
     <div className="flex min-h-screen flex-col bg-trail-bg text-trail-fog">
@@ -17,7 +29,7 @@ export function App() {
         <section className="mb-10">
           <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">TrailForge</h1>
           <p className="mt-3 max-w-xl text-base text-trail-muted">
-            Plan a themed walking tour from real OpenStreetMap places — Phase 2 shared contracts.
+            Plan a themed walking tour from real OpenStreetMap places — Phase 6 3D scene.
           </p>
         </section>
 
@@ -89,7 +101,7 @@ export function App() {
             <h2 id="scene-heading" className="mb-3 font-display text-xl font-semibold">
               Scene preview
             </h2>
-            <ScenePlaceholder />
+            {response ? <Scene data={response} debug={debug} /> : null}
           </section>
         </main>
 
