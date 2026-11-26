@@ -47,6 +47,8 @@ export function GeneratePage() {
   }, [lang, setUiLanguage]);
 
   useEffect(() => {
+    // Only paint SAMPLE fixture when DEMO is explicit — not on every /app load.
+    if (!isDemoMode()) return;
     const demo = asDemoFixture(SAMPLE_RESPONSE);
     setResponse(demo);
     setContent(demo.content.map((c) => ({ ...c })));
