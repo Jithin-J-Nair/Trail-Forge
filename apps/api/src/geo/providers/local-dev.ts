@@ -1,6 +1,14 @@
 import type { Theme } from '@trailforge/shared';
+import type { OverpassBundle } from '../../osm/overpass.js';
 import { transformOverpass } from '../../osm/transform.js';
-import type { GeocodeProvider, GeocodeRequest, GeocodeResult, PoiDiscoveryProvider, PoiDiscoveryRequest, PoiDiscoveryResult } from '../types.js';
+import type {
+  GeocodeProvider,
+  GeocodeRequest,
+  GeocodeResult,
+  PoiDiscoveryProvider,
+  PoiDiscoveryRequest,
+  PoiDiscoveryResult,
+} from '../types.js';
 
 const DEV_LABEL = '[DEV MODE - LOCAL FIXTURE DATA]';
 
@@ -21,7 +29,9 @@ function devCenter(query: string): { lat: number; lon: number; displayName: stri
 export class LocalDevGeocodeProvider implements GeocodeProvider {
   readonly name = 'local_dev' as const;
   readonly kind = 'geocode' as const;
-  isConfigured() { return process.env['LOCAL_DEV_DATA_SOURCE'] === 'true'; }
+  isConfigured() {
+    return process.env['LOCAL_DEV_DATA_SOURCE'] === 'true';
+  }
   async geocode(req: GeocodeRequest): Promise<GeocodeResult> {
     const c = devCenter(req.query);
     return { ...c, provider: this.name };
@@ -39,7 +49,9 @@ const THEME_NAMES: Record<Theme, string[]> = {
 export class LocalDevPoiProvider implements PoiDiscoveryProvider {
   readonly name = 'local_dev' as const;
   readonly kind = 'poi_discovery' as const;
-  isConfigured() { return process.env['LOCAL_DEV_DATA_SOURCE'] === 'true'; }
+  isConfigured() {
+    return process.env['LOCAL_DEV_DATA_SOURCE'] === 'true';
+  }
   async discover(req: PoiDiscoveryRequest): Promise<PoiDiscoveryResult> {
     const names = THEME_NAMES[req.theme];
     const pois = names.map((n, i) => {
@@ -57,8 +69,8 @@ export class LocalDevPoiProvider implements PoiDiscoveryProvider {
         },
       };
     });
-    const scene = transformOverpass(req.center, { pois, buildings: [], highways: [] } as any);
-    return { scene, provider: this.name };
+    const bundle: OverpassBundle = { pois, buildings: [], highways: [] };
+    return { scene: transformOverpass(req.center, bundle), provider: this.name };
   }
 }
 

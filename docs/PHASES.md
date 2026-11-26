@@ -112,3 +112,11 @@
 3. The web app shows a performance-aware 3D dusk city, lets you review shaky claims, and exports verified GeoJSON/CSV with ODbL attribution.
 4. CI runs typecheck/lint/test/build/audit; nightly Mock eval writes `docs/EVAL.md`; Docker ships a non-root API with `/api/health`.
 5. Interview closer: “I built the trust boundary first—schemas, grounding, caching, and rate limits—so the 3D tour is impressive and accountable.”
+
+## Arena PR #14 hygiene (post-merge)
+
+1. Removed unused Arena scaffold: root strategy/architecture MD dump, `services/*`, `packages/ai-core`, `packages/domain`, terraform/deploy stubs.
+2. Kept working geo resilience (provider fallback, circuit breaker, LOCAL_DEV labeled fixtures) and fixed trustScore formula (was saturating at 100).
+3. Restored DEMO honesty: `?demo=1` / `VITE_DEMO_MODE`, SAMPLE_RESPONSE `demo: true` + non-live provenance; auth login lives on Profile, not SearchPanel.
+4. Docs kept short: root `README` + `docs/{ARCHITECTURE,PHASES,PERFORMANCE,DEPLOY,EVAL}` only.
+5. Interview line: “We kept Arena’s useful geo resilience and deleted the speculative novel — green CI and honest DEMO labels matter more than blueprint MD files.”

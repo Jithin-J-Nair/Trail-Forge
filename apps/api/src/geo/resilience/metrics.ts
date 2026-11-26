@@ -1,4 +1,9 @@
-import type { GeoMetricsSnapshot, GeoProviderName, ProviderHealth, ProviderKind } from '../types.js';
+import type {
+  GeoMetricsSnapshot,
+  GeoProviderName,
+  ProviderHealth,
+  ProviderKind,
+} from '../types.js';
 
 type LatBucket = { count: number; totalMs: number; maxMs: number };
 
@@ -46,7 +51,8 @@ export class GeoMetrics {
 
   snapshot(): GeoMetricsSnapshot {
     const latencyMs: GeoMetricsSnapshot['latencyMs'] = {};
-    for (const [k, b] of this.latency) latencyMs[k] = { ...b, avgMs: b.count ? b.totalMs / b.count : 0 };
+    for (const [k, b] of this.latency)
+      latencyMs[k] = { ...b, avgMs: b.count ? b.totalMs / b.count : 0 };
     const totalCache = this.cacheHits + this.cacheMisses + this.cacheStaleHits;
     return {
       requestsTotal: Object.fromEntries(this.requests),

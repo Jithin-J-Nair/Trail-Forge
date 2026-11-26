@@ -15,7 +15,11 @@ export class CircuitBreaker {
 
   constructor(
     readonly name: string,
-    private readonly opts: CircuitBreakerOptions = { failureThreshold: 3, successThreshold: 2, openMs: 30_000 },
+    private readonly opts: CircuitBreakerOptions = {
+      failureThreshold: 3,
+      successThreshold: 2,
+      openMs: 30_000,
+    },
   ) {}
 
   getState(): CircuitState {

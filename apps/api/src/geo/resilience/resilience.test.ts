@@ -22,11 +22,14 @@ describe('circuit breaker', () => {
 describe('retry', () => {
   it('retries with backoff and eventually succeeds', async () => {
     let attempts = 0;
-    const result = await withRetry(async () => {
-      attempts += 1;
-      if (attempts < 3) throw new Error('transient');
-      return 'ok';
-    }, { retries: 3, baseMs: 1, maxMs: 5, jitter: false });
+    const result = await withRetry(
+      async () => {
+        attempts += 1;
+        if (attempts < 3) throw new Error('transient');
+        return 'ok';
+      },
+      { retries: 3, baseMs: 1, maxMs: 5, jitter: false },
+    );
     expect(result).toBe('ok');
     expect(attempts).toBe(3);
   });

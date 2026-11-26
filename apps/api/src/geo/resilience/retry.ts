@@ -11,7 +11,10 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function withRetry<T>(fn: (attempt: number) => Promise<T>, opts: RetryOptions): Promise<T> {
+export async function withRetry<T>(
+  fn: (attempt: number) => Promise<T>,
+  opts: RetryOptions,
+): Promise<T> {
   let lastErr: unknown;
   for (let attempt = 0; attempt <= opts.retries; attempt++) {
     try {

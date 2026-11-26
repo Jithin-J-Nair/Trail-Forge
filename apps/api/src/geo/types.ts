@@ -2,13 +2,7 @@ import type { LonLat, Theme } from '@trailforge/shared';
 import type { TransformedScene } from '../osm/transform.js';
 
 export type GeoProviderName =
-  | 'nominatim'
-  | 'photon'
-  | 'openrouteservice'
-  | 'geoapify'
-  | 'mapbox'
-  | 'overpass'
-  | 'local_dev';
+  'nominatim' | 'photon' | 'openrouteservice' | 'geoapify' | 'mapbox' | 'overpass' | 'local_dev';
 
 export type ProviderKind = 'geocode' | 'poi_discovery';
 
@@ -23,7 +17,8 @@ export interface ProviderDiagnostic {
 }
 
 export interface GeoProviderError extends Error {
-  code: 'UPSTREAM_ERROR' | 'RATE_LIMITED' | 'TIMEOUT' | 'CIRCUIT_OPEN' | 'NOT_FOUND' | 'CONFIG_MISSING';
+  code:
+    'UPSTREAM_ERROR' | 'RATE_LIMITED' | 'TIMEOUT' | 'CIRCUIT_OPEN' | 'NOT_FOUND' | 'CONFIG_MISSING';
   provider: GeoProviderName;
   kind: ProviderKind;
   diagnostics?: ProviderDiagnostic[];

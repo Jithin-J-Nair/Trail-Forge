@@ -19,13 +19,27 @@ export function createItinerariesRouter(): Router {
   router.post('/', async (req, res) => {
     const parsed = saveSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: { code: 'invalid_request', message: 'Invalid itinerary payload' } });
+      res
+        .status(400)
+        .json({ error: { code: 'invalid_request', message: 'Invalid itinerary payload' } });
       return;
     }
     const { query, theme, durationMinutes, radiusMeters, response } = parsed.data;
-    const r: any = response;
-    const centerLon = Number(r?.center?.lon ?? 0);
-    const centerLat = Number(r?.center?.lat ?? 0);
+    const r = response as {
+      center?: { lon?: unknown; lat?: unknown };
+      provenance?: { area?: unknown };
+      verification?: unknown;
+      pois?: Array<{
+        id?: unknown;
+        lon?: unknown;
+        lat?: unknown;
+        name?: unknown;
+        category?: unknown;
+        osmTags?: unknown;
+      }>;
+    };
+    const centerLon = Number(r.center?.lon ?? 0);
+    const centerLat = Number(r.center?.lat ?? 0);
     const pool = getPool();
     const { rows } = await pool.query(
       `INSERT INTO itineraries
@@ -42,10 +56,10 @@ export function createItinerariesRouter(): Router {
         radiusMeters,
         centerLon,
         centerLat,
-        r?.provenance?.area ?? null,
+        typeof r.provenance?.area === 'string' ? r.provenance.area : null,
         JSON.stringify(response),
-        JSON.stringify(r?.verification ?? {}),
-        r?.provenance ? JSON.stringify(r.provenance) : null,
+        JSON.stringify(r.verification ?? {}),
+        r.provenance ? JSON.stringify(r.provenance) : null,
       ],
     );
     const pois = Array.isArray(r?.pois) ? r.pois : [];

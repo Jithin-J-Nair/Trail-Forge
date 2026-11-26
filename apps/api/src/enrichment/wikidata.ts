@@ -11,15 +11,25 @@ export type WikidataEnrichment = {
 };
 
 const entitySchema = z.object({
-  entities: z.record(z.object({
-    labels: z.record(z.object({ value: z.string() })).optional(),
-    descriptions: z.record(z.object({ value: z.string() })).optional(),
-    claims: z.record(z.array(z.object({
-      mainsnak: z.object({
-        datavalue: z.object({ value: z.any() }).optional(),
-      }).optional(),
-    }))).optional(),
-  })),
+  entities: z.record(
+    z.object({
+      labels: z.record(z.object({ value: z.string() })).optional(),
+      descriptions: z.record(z.object({ value: z.string() })).optional(),
+      claims: z
+        .record(
+          z.array(
+            z.object({
+              mainsnak: z
+                .object({
+                  datavalue: z.object({ value: z.any() }).optional(),
+                })
+                .optional(),
+            }),
+          ),
+        )
+        .optional(),
+    }),
+  ),
 });
 
 export async function fetchWikidataEntity(
@@ -36,7 +46,10 @@ export async function fetchWikidataEntity(
   options.signal?.addEventListener('abort', onAbort);
   try {
     const res = await fetchImpl(url, {
-      headers: { Accept: 'application/json', 'User-Agent': 'TrailForge/0.1 (geospatial verification)' },
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'TrailForge/0.1 (geospatial verification)',
+      },
       signal: controller.signal,
     });
     if (!res.ok) return null;
@@ -47,9 +60,10 @@ export async function fetchWikidataEntity(
     const label = entity.labels?.[lang]?.value ?? entity.labels?.['en']?.value;
     const description = entity.descriptions?.[lang]?.value ?? entity.descriptions?.['en']?.value;
     const imageClaim = entity.claims?.['P18']?.[0]?.mainsnak?.datavalue?.value;
-    const imageUrl = typeof imageClaim === 'string'
-      ? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imageClaim)}`
-      : undefined;
+    const imageUrl =
+      typeof imageClaim === 'string'
+        ? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imageClaim)}`
+        : undefined;
     return {
       qid,
       ...(label ? { label } : {}),

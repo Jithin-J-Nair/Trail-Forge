@@ -1,7 +1,9 @@
 import type { GenerateResponse } from '@trailforge/shared';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { getToken, login, me, register, saveItinerary, setToken, type AuthUser } from '../api.js';
+import { getToken, me, saveItinerary, setToken, type AuthUser } from '../api.js';
 import { Footer } from '../components/Footer.js';
+import { asDemoFixture, isDemoMode } from '../demo.js';
+import { SAMPLE_RESPONSE } from '../fixtures/sample-response.js';
 import { detectLang, t, type UiLang } from '../i18n/messages.js';
 import { useTourSceneStore } from '../scene/tour-scene-store.js';
 import { useTourStore } from '../store/tour-store.js';
@@ -10,6 +12,7 @@ import { ResultPanel } from '../ui/ResultPanel.js';
 import { RouteBar } from '../ui/RouteBar.js';
 import { SearchPanel } from '../ui/SearchPanel.js';
 import { Toast } from '../ui/Toast.js';
+import { GenerateMobileSheet } from './GenerateMobileSheet.js';
 
 const Scene = lazy(async () => {
   const mod = await import('../scene/Scene.js');
@@ -44,37 +47,45 @@ export function GeneratePage() {
   }, [lang, setUiLanguage]);
 
   useEffect(() => {
+    const demo = asDemoFixture(SAMPLE_RESPONSE);
+    setResponse(demo);
+    setContent(demo.content.map((c) => ({ ...c })));
+    setDemoActive(true);
+  }, [setResponse]);
+
+  useEffect(() => {
     if (!getToken()) return;
-    me().then((r) => setUser(r.user)).catch(() => setToken(null));
+    me()
+      .then((r) => setUser(r.user))
+      .catch(() => setToken(null));
   }, []);
 
-  const handleLogin = useCallback(async (email: string, password: string) => {
-    const r = await login(email, password);
-    setToken(r.token);
-    setUser(r.user);
-  }, []);
-  const handleRegister = useCallback(async (email: string, password: string, displayName?: string) => {
-    const r = await register(email, password, displayName);
-    setToken(r.token);
-    setUser(r.user);
-  }, []);
-  const handleLogout = useCallback(() => {
-    setToken(null);
-    setUser(null);
-  }, []);
+  const applyFixture = useCallback(
+    (reason?: string) => {
+      const demo = asDemoFixture(SAMPLE_RESPONSE);
+      setResponse(demo);
+      setContent(demo.content.map((c) => ({ ...c })));
+      setDemoActive(true);
+      if (reason) setToast(reason);
+    },
+    [setResponse],
+  );
+
   const handleSave = useCallback(async () => {
     if (!response) return;
-    await saveItinerary({ query: draft.query, theme: draft.theme, durationMinutes: draft.durationMinutes, radiusMeters: draft.radiusMeters, response });
+    await saveItinerary({
+      query: draft.query,
+      theme: draft.theme,
+      durationMinutes: draft.durationMinutes,
+      radiusMeters: draft.radiusMeters,
+      response,
+    });
     setToast('Itinerary saved');
   }, [draft, response]);
 
-  const reportError = useCallback((reason?: string) => {
-    if (reason) setToast(reason);
-  }, []);
-
   const runGenerate = useCallback(async () => {
     if (!navigator.onLine) {
-      reportError(t(lang, 'offline'));
+      applyFixture(t(lang, 'offline'));
       return;
     }
     if (!draft.query || !draft.theme) {
@@ -113,7 +124,7 @@ export function GeneratePage() {
       const data = (await res.json()) as GenerateResponse;
       setResponse(data);
       setContent(data.content.map((c) => ({ ...c })));
-      setDemoActive(Boolean(data.demo));
+      setDemoActive(Boolean(data.demo || data.devMode));
       setStatus('ready');
       setMobileSheet('results');
       if (data.message) setToast(data.message);
@@ -121,12 +132,16 @@ export function GeneratePage() {
       if ((err as Error).name === 'AbortError') return;
       const message = (err as Error).message || t(lang, 'errorRetry');
       setStatus('error', message);
-      reportError(message);
+      if (isDemoMode()) {
+        applyFixture(message);
+      } else {
+        setToast(message);
+      }
     } finally {
       timers.forEach(clearTimeout);
       setStage(null);
     }
-  }, [draft, lang, reportError, setResponse, setStatus]);
+  }, [applyFixture, draft, lang, setResponse, setStatus]);
 
   const searchPanel = (
     <SearchPanel
@@ -135,10 +150,6 @@ export function GeneratePage() {
       loadingStage={stage}
       onGenerate={() => void runGenerate()}
       onCancel={() => abortRef.current?.abort()}
-      user={user}
-      onLogin={handleLogin}
-      onRegister={handleRegister}
-      onLogout={handleLogout}
     />
   );
 
@@ -170,7 +181,6 @@ export function GeneratePage() {
         </p>
       )}
 
-      {/* Desktop floating panels */}
       <div className="pointer-events-none absolute inset-0 z-20 hidden md:block">
         <div className="pointer-events-auto absolute left-5 top-5 w-[340px]">{searchPanel}</div>
         {response ? (
@@ -198,60 +208,19 @@ export function GeneratePage() {
         ) : null}
       </div>
 
-      {/* Mobile bottom sheets */}
-      <div className="absolute inset-x-0 bottom-0 z-30 md:hidden">
-        <div className="mb-2 flex justify-center gap-2 px-3">
-          <button
-            type="button"
-            className="glass-btn-ghost px-3 py-1.5 text-xs"
-            onClick={() => setMobileSheet('search')}
-          >
-            Search
-          </button>
-          {response ? (
-            <button
-              type="button"
-              className="glass-btn-ghost px-3 py-1.5 text-xs"
-              onClick={() => setMobileSheet('results')}
-            >
-              Results
-            </button>
-          ) : null}
-        </div>
-        {mobileSheet ? (
-          <div className="max-h-[58vh] overflow-auto rounded-t-glass border border-trail-border bg-trail-surface p-3 backdrop-blur-glass">
-            <button
-              type="button"
-              className="mb-2 w-full text-center text-xs text-trail-muted"
-              onClick={() => setMobileSheet(null)}
-            >
-              Close
-            </button>
-            {mobileSheet === 'search' ? searchPanel : null}
-            {mobileSheet === 'results' && response ? (
-              <>
-                <ResultPanel
-                  lang={lang}
-                  response={response}
-                  content={content}
-                  onContentChange={setContent}
-                  canSave={Boolean(user)}
-                  onSave={handleSave}
-                />
-                <div className="mt-3">
-                  <RouteBar
-                    lang={lang}
-                    response={response}
-                    content={content}
-                    playing={playing}
-                    onTogglePlay={() => setPlaying((p) => !p)}
-                  />
-                </div>
-              </>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
+      <GenerateMobileSheet
+        mobileSheet={mobileSheet}
+        setMobileSheet={setMobileSheet}
+        searchPanel={searchPanel}
+        response={response}
+        lang={lang}
+        content={content}
+        setContent={setContent}
+        canSave={Boolean(user)}
+        onSave={handleSave}
+        playing={playing}
+        onTogglePlay={() => setPlaying((p) => !p)}
+      />
 
       <Footer />
       {toast ? (

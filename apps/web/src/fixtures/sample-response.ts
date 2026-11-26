@@ -132,7 +132,7 @@ function buildContent(): PoiContent[] {
   });
 }
 
-/** Real OSM-derived snapshot for initial UI / offline fallback. Provenance-tagged. */
+/** UI / DEMO_MODE fixture only — always labeled demo; not live OSM. */
 export const SAMPLE_RESPONSE: GenerateResponse = {
   center: { lon: 139.7967, lat: 35.7148 },
   scene: {
@@ -149,11 +149,12 @@ export const SAMPLE_RESPONSE: GenerateResponse = {
     titleEn: 'Asakusa Night Walk',
   },
   verification: { verified: 4, needsReview: 3, rejected: 1, total: 8 },
-  demo: false,
+  demo: true,
   provenance: {
-    mode: 'live_osm',
-    source: 'OpenStreetMap test fixture',
-    license: 'ODbL-1.0',
-    attribution: '© OpenStreetMap contributors',
+    mode: 'local_dev',
+    source: 'SAMPLE_RESPONSE UI fixture',
+    license: 'N/A (demo fixture)',
+    attribution: 'DEMO DATA — not live geographic data',
+    note: 'Shown under DEMO_MODE (?demo=1 / VITE_DEMO_MODE) or as the initial glass HUD paint.',
   },
 };

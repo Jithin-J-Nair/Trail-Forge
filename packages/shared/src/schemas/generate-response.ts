@@ -36,19 +36,23 @@ export type DataProvenance = z.infer<typeof DataProvenanceSchema>;
 
 export const PoiEnrichmentSchema = z.object({
   poiId: z.string().min(1),
-  wikidata: z.object({
-    qid: z.string(),
-    label: z.string().optional(),
-    description: z.string().optional(),
-    imageUrl: z.string().url().optional(),
-    sourceUrl: z.string().url(),
-  }).optional(),
-  wikipedia: z.object({
-    title: z.string(),
-    extract: z.string().optional(),
-    url: z.string().url(),
-    lang: z.string(),
-  }).optional(),
+  wikidata: z
+    .object({
+      qid: z.string(),
+      label: z.string().optional(),
+      description: z.string().optional(),
+      imageUrl: z.string().url().optional(),
+      sourceUrl: z.string().url(),
+    })
+    .optional(),
+  wikipedia: z
+    .object({
+      title: z.string(),
+      extract: z.string().optional(),
+      url: z.string().url(),
+      lang: z.string(),
+    })
+    .optional(),
 });
 
 export type PoiEnrichment = z.infer<typeof PoiEnrichmentSchema>;

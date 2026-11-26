@@ -66,7 +66,9 @@ export function createApp(options: CreateAppOptions = {}) {
   app.get('/api/ready', async (_req, res) => {
     const dbOk = process.env['DATABASE_URL'] ? await dbHealthcheck() : true;
     const ok = dbOk;
-    res.status(ok ? 200 : 503).json({ status: ok ? 'ready' : 'degraded', checks: { database: dbOk } });
+    res
+      .status(ok ? 200 : 503)
+      .json({ status: ok ? 'ready' : 'degraded', checks: { database: dbOk } });
   });
 
   app.use('/api/auth', createAuthRouter());
