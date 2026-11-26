@@ -176,7 +176,7 @@ export function GeneratePage() {
 
       {(demoActive || response?.demo || response?.devMode) && (
         <p
-          className="absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-full border border-trail-review/50 bg-trail-review/15 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-trail-review"
+          className="absolute left-1/2 top-14 z-40 -translate-x-1/2 rounded-full border border-trail-review/50 bg-trail-review/15 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-trail-review"
           role="status"
         >
           {response?.devMode ? 'DEV MODE' : 'DEMO DATA'}
