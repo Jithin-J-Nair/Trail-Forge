@@ -62,8 +62,15 @@ export function ResultPanel({
         <p className="mt-1.5 text-xs text-trail-muted">{bar}</p>
         {response.trustScore ? (
           <div className="mt-2 rounded-lg border border-trail-border/60 bg-black/20 px-3 py-2 text-xs">
-            <div className="flex items-center justify-between"><span className="text-trail-muted">Trust Score</span><span className="font-semibold text-trail-fog">{response.trustScore.score}/100</span></div>
-            <div className="mt-1 text-[11px] text-trail-muted">Coverage {(response.trustScore.verificationCoverage*100).toFixed(0)}% · Source {(response.trustScore.sourceQuality*100).toFixed(0)}% · Unsupported {response.trustScore.unsupportedClaims}</div>
+            <div className="flex items-center justify-between">
+              <span className="text-trail-muted">Trust Score</span>
+              <span className="font-semibold text-trail-fog">{response.trustScore.score}/100</span>
+            </div>
+            <div className="mt-1 text-[11px] text-trail-muted">
+              Coverage {(response.trustScore.verificationCoverage * 100).toFixed(0)}% · Source{' '}
+              {(response.trustScore.sourceQuality * 100).toFixed(0)}% · Unsupported{' '}
+              {response.trustScore.unsupportedClaims}
+            </div>
           </div>
         ) : null}
         {canSave && onSave ? (
@@ -72,7 +79,18 @@ export function ResultPanel({
               type="button"
               className="glass-btn-ghost px-3 py-1.5 text-xs"
               disabled={saving}
-              onClick={async () => { setSaving(true); setSaveMsg(null); try { await onSave(); setSaveMsg('Saved'); } catch (e) { setSaveMsg((e as Error).message); } finally { setSaving(false); } }}
+              onClick={async () => {
+                setSaving(true);
+                setSaveMsg(null);
+                try {
+                  await onSave();
+                  setSaveMsg('Saved');
+                } catch (e) {
+                  setSaveMsg((e as Error).message);
+                } finally {
+                  setSaving(false);
+                }
+              }}
             >
               {saving ? 'Saving...' : 'Save itinerary'}
             </button>

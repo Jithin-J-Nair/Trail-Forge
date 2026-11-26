@@ -8,7 +8,12 @@ const emailSchema = z.string().email().max(320);
 const passwordSchema = z.string().min(8).max(200);
 const displayNameSchema = z.string().min(1).max(120).optional();
 
-export type AuthUser = { id: string; email: string; displayName: string | null; emailVerifiedAt?: string | null };
+export type AuthUser = {
+  id: string;
+  email: string;
+  displayName: string | null;
+  emailVerifiedAt?: string | null;
+};
 
 function jwtSecret(): Uint8Array {
   const secret = process.env['JWT_SECRET'];
@@ -32,7 +37,10 @@ export async function signAccessToken(userId: string): Promise<string> {
     .sign(jwtSecret());
 }
 
-export async function issueRefreshToken(userId: string, meta?: { userAgent?: string; ip?: string }): Promise<string> {
+export async function issueRefreshToken(
+  userId: string,
+  meta?: { userAgent?: string; ip?: string },
+): Promise<string> {
   const token = randomToken();
   const tokenHash = hashToken(token);
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -44,13 +52,19 @@ export async function issueRefreshToken(userId: string, meta?: { userAgent?: str
   return token;
 }
 
-export async function rotateRefreshToken(refreshToken: string): Promise<{ userId: string; refreshToken: string; accessToken: string }> {
+export async function rotateRefreshToken(
+  refreshToken: string,
+): Promise<{ userId: string; refreshToken: string; accessToken: string }> {
   const pool = getPool();
   const tokenHash = hashToken(refreshToken);
-  const { rows } = await pool.query<{ id: string; user_id: string; expires_at: string; revoked_at: string | null }>(
-    `SELECT id, user_id, expires_at, revoked_at FROM refresh_tokens WHERE token_hash = $1`,
-    [tokenHash],
-  );
+  const { rows } = await pool.query<{
+    id: string;
+    user_id: string;
+    expires_at: string;
+    revoked_at: string | null;
+  }>(`SELECT id, user_id, expires_at, revoked_at FROM refresh_tokens WHERE token_hash = $1`, [
+    tokenHash,
+  ]);
   const row = rows[0];
   if (!row || row.revoked_at || new Date(row.expires_at).getTime() < Date.now()) {
     throw new Error('INVALID_REFRESH_TOKEN');
@@ -63,16 +77,24 @@ export async function rotateRefreshToken(refreshToken: string): Promise<{ userId
 
 export async function revokeRefreshToken(refreshToken: string): Promise<void> {
   const pool = getPool();
-  await pool.query(`UPDATE refresh_tokens SET revoked_at = now() WHERE token_hash = $1 AND revoked_at IS NULL`, [hashToken(refreshToken)]);
+  await pool.query(
+    `UPDATE refresh_tokens SET revoked_at = now() WHERE token_hash = $1 AND revoked_at IS NULL`,
+    [hashToken(refreshToken)],
+  );
 }
 
 export async function revokeAllUserRefreshTokens(userId: string): Promise<void> {
   const pool = getPool();
-  await pool.query(`UPDATE refresh_tokens SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL`, [userId]);
+  await pool.query(
+    `UPDATE refresh_tokens SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL`,
+    [userId],
+  );
 }
 
 export async function createUser(input: {
-  email: string; password: string; displayName?: string;
+  email: string;
+  password: string;
+  displayName?: string;
 }): Promise<{ user: AuthUser; token: string; refreshToken: string }> {
   const email = emailSchema.parse(input.email.toLowerCase().trim());
   const password = passwordSchema.parse(input.password);
@@ -93,7 +115,10 @@ export async function createUser(input: {
 }
 
 export async function loginUser(input: {
-  email: string; password: string; userAgent?: string; ip?: string;
+  email: string;
+  password: string;
+  userAgent?: string;
+  ip?: string;
 }): Promise<{ user: AuthUser; token: string; refreshToken: string }> {
   const email = emailSchema.parse(input.email.toLowerCase().trim());
   const password = passwordSchema.parse(input.password);
@@ -107,9 +132,17 @@ export async function loginUser(input: {
   if (!row) throw new Error('INVALID_CREDENTIALS');
   const ok = await bcrypt.compare(password, row.password_hash);
   if (!ok) throw new Error('INVALID_CREDENTIALS');
-  const user: AuthUser = { id: row.id, email: row.email, displayName: row.displayName, emailVerifiedAt: row.emailVerifiedAt ?? null };
+  const user: AuthUser = {
+    id: row.id,
+    email: row.email,
+    displayName: row.displayName,
+    emailVerifiedAt: row.emailVerifiedAt ?? null,
+  };
   const token = await signAccessToken(user.id);
-  const refreshToken = await issueRefreshToken(user.id, { ...(input.userAgent ? { userAgent: input.userAgent } : {}), ...(input.ip ? { ip: input.ip } : {}) });
+  const refreshToken = await issueRefreshToken(user.id, {
+    ...(input.userAgent ? { userAgent: input.userAgent } : {}),
+    ...(input.ip ? { ip: input.ip } : {}),
+  });
   return { user, token, refreshToken };
 }
 
@@ -150,12 +183,17 @@ export async function verifyEmail(token: string): Promise<void> {
   const row = rows[0];
   if (!row) throw new Error('INVALID_VERIFICATION_TOKEN');
   await pool.query(`UPDATE email_verification_tokens SET used_at=now() WHERE id=$1`, [row.id]);
-  await pool.query(`UPDATE users SET email_verified_at = COALESCE(email_verified_at, now()), updated_at=now() WHERE id=$1`, [row.user_id]);
+  await pool.query(
+    `UPDATE users SET email_verified_at = COALESCE(email_verified_at, now()), updated_at=now() WHERE id=$1`,
+    [row.user_id],
+  );
 }
 
 export async function createPasswordResetToken(email: string): Promise<string | null> {
   const pool = getPool();
-  const { rows } = await pool.query<{ id: string }>(`SELECT id FROM users WHERE email=$1`, [email.toLowerCase().trim()]);
+  const { rows } = await pool.query<{ id: string }>(`SELECT id FROM users WHERE email=$1`, [
+    email.toLowerCase().trim(),
+  ]);
   const user = rows[0];
   if (!user) return null;
   const token = randomToken();
@@ -176,7 +214,10 @@ export async function resetPassword(token: string, newPassword: string): Promise
   const row = rows[0];
   if (!row) throw new Error('INVALID_RESET_TOKEN');
   const passwordHash = await bcrypt.hash(password, 12);
-  await pool.query(`UPDATE users SET password_hash=$1, updated_at=now() WHERE id=$2`, [passwordHash, row.user_id]);
+  await pool.query(`UPDATE users SET password_hash=$1, updated_at=now() WHERE id=$2`, [
+    passwordHash,
+    row.user_id,
+  ]);
   await pool.query(`UPDATE password_reset_tokens SET used_at=now() WHERE id=$1`, [row.id]);
   await revokeAllUserRefreshTokens(row.user_id);
 }

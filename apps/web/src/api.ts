@@ -1,4 +1,15 @@
+import type { GenerateResponse } from '@trailforge/shared';
+
 export type AuthUser = { id: string; email: string; displayName: string | null };
+
+export type SavedItinerary = {
+  id: string;
+  query: string;
+  theme: string;
+  durationMinutes: number;
+  createdAt: string;
+  verificationSummary?: { verified?: number };
+};
 
 const TOKEN_KEY = 'trailforge_token';
 
@@ -17,7 +28,7 @@ async function apiFetch(path: string, init: RequestInit = {}) {
   if (token) headers.set('Authorization', `Bearer ${token}`);
   const res = await fetch(path, { ...init, headers });
   if (!res.ok) {
-    const body = await res.json().catch(() => null);
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
     throw new Error(body?.error?.message ?? `HTTP ${res.status}`);
   }
   if (res.status === 204) return null;
@@ -25,17 +36,29 @@ async function apiFetch(path: string, init: RequestInit = {}) {
 }
 
 export async function register(email: string, password: string, displayName?: string) {
-  return apiFetch('/api/auth/register', { method: 'POST', body: JSON.stringify({ email, password, ...(displayName ? { displayName } : {}) }) }) as Promise<{ user: AuthUser; token: string }>;
+  return apiFetch('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, ...(displayName ? { displayName } : {}) }),
+  }) as Promise<{ user: AuthUser; token: string }>;
 }
 export async function login(email: string, password: string) {
-  return apiFetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }) as Promise<{ user: AuthUser; token: string }>;
+  return apiFetch('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  }) as Promise<{ user: AuthUser; token: string }>;
 }
 export async function me() {
   return apiFetch('/api/auth/me') as Promise<{ user: AuthUser }>;
 }
-export async function saveItinerary(payload: any) {
+export async function saveItinerary(payload: {
+  query: string;
+  theme: string;
+  durationMinutes: number;
+  radiusMeters: number;
+  response: GenerateResponse;
+}) {
   return apiFetch('/api/itineraries', { method: 'POST', body: JSON.stringify(payload) });
 }
 export async function listItineraries() {
-  return apiFetch('/api/itineraries') as Promise<{ itineraries: any[] }>;
+  return apiFetch('/api/itineraries') as Promise<{ itineraries: SavedItinerary[] }>;
 }

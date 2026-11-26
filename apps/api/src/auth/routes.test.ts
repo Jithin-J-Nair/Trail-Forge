@@ -5,7 +5,9 @@ import { createApp } from '../app.js';
 describe('auth routes', () => {
   it('rejects invalid registration payload', async () => {
     const app = createApp();
-    const res = await request(app).post('/api/auth/register').send({ email: 'bad', password: 'short' });
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({ email: 'bad', password: 'short' });
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('invalid_request');
   });

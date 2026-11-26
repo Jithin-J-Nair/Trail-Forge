@@ -16,9 +16,7 @@ export async function runMigrations(): Promise<void> {
     )
   `);
 
-  const files = (await readdir(MIGRATIONS_DIR))
-    .filter((f) => f.endsWith('.sql'))
-    .sort();
+  const files = (await readdir(MIGRATIONS_DIR)).filter((f) => f.endsWith('.sql')).sort();
 
   for (const file of files) {
     const { rows } = await pool.query('SELECT 1 FROM schema_migrations WHERE id = $1', [file]);

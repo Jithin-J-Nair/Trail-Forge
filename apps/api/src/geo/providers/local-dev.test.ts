@@ -19,8 +19,12 @@ describe('LOCAL_DEV_DATA_SOURCE', () => {
     const g = await geo.geocode({ query: 'Paris' });
     expect(g.displayName).toContain('DEV MODE');
     const poi = new LocalDevPoiProvider();
-    const p = await poi.discover({ center: { lat: g.lat, lon: g.lon }, radiusMeters: 1000, theme: 'culture' });
+    const p = await poi.discover({
+      center: { lat: g.lat, lon: g.lon },
+      radiusMeters: 1000,
+      theme: 'culture',
+    });
     expect(p.scene.pois.length).toBeGreaterThan(0);
-    expect(p.scene.pois[0].name).toContain('DEV MODE');
+    expect(p.scene.pois[0]?.name).toContain('DEV MODE');
   });
 });

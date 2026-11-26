@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import IORedis from 'ioredis';
+import { Redis } from 'ioredis';
 import { LRUCache } from 'lru-cache';
 import { logger } from '../../logger.js';
 import { geoMetrics } from './metrics.js';
@@ -16,7 +16,7 @@ export interface SwrCacheOptions {
 
 export class SwrCache<T> {
   private memory: LRUCache<string, CacheEntry<T>>;
-  private redis: any = null;
+  private redis: Redis | null = null;
   private redisReady = false;
   private inflight = new Map<string, Promise<T>>();
 
@@ -24,10 +24,20 @@ export class SwrCache<T> {
     this.memory = new LRUCache<string, CacheEntry<T>>({ max: opts.max ?? 500 });
     if (opts.redisUrl) {
       try {
-        const RedisCtor: any = (IORedis as any).default ?? IORedis;
-        this.redis = new RedisCtor(opts.redisUrl, { lazyConnect: true, maxRetriesPerRequest: 1, enableOfflineQueue: false });
+        this.redis = new Redis(opts.redisUrl, {
+          lazyConnect: true,
+          maxRetriesPerRequest: 1,
+          enableOfflineQueue: false,
+        });
         this.redis.on('error', (err: unknown) => logger.warn({ err }, 'redis cache error'));
-        void this.redis.connect().then(() => { this.redisReady = true; }).catch(() => { this.redisReady = false; });
+        void this.redis
+          .connect()
+          .then(() => {
+            this.redisReady = true;
+          })
+          .catch(() => {
+            this.redisReady = false;
+          });
       } catch {
         this.redis = null;
       }
@@ -56,7 +66,12 @@ export class SwrCache<T> {
   private async setRedis(key: string, entry: CacheEntry<T>): Promise<void> {
     if (!this.redis || !this.redisReady) return;
     try {
-      await this.redis.set(this.redisKey(key), JSON.stringify(entry), 'PX', this.opts.ttlMs + this.opts.staleTtlMs);
+      await this.redis.set(
+        this.redisKey(key),
+        JSON.stringify(entry),
+        'PX',
+        this.opts.ttlMs + this.opts.staleTtlMs,
+      );
     } catch {
       // ignore redis failures; memory cache remains
     }
@@ -72,12 +87,20 @@ export class SwrCache<T> {
 
   async set(key: string, value: T): Promise<void> {
     const now = Date.now();
-    const entry: CacheEntry<T> = { value, savedAt: now, staleAt: now + this.opts.ttlMs, expiresAt: now + this.opts.ttlMs + this.opts.staleTtlMs };
+    const entry: CacheEntry<T> = {
+      value,
+      savedAt: now,
+      staleAt: now + this.opts.ttlMs,
+      expiresAt: now + this.opts.ttlMs + this.opts.staleTtlMs,
+    };
     this.memory.set(key, entry);
     await this.setRedis(key, entry);
   }
 
-  async getOrLoad(key: string, loader: () => Promise<T>): Promise<{ value: T; cache: 'hit' | 'miss' | 'stale' }> {
+  async getOrLoad(
+    key: string,
+    loader: () => Promise<T>,
+  ): Promise<{ value: T; cache: 'hit' | 'miss' | 'stale' }> {
     const entry = await this.get(key);
     const now = Date.now();
     if (entry && now < entry.staleAt) {
@@ -86,12 +109,19 @@ export class SwrCache<T> {
     }
     if (entry && now < entry.expiresAt) {
       geoMetrics.recordCache('stale');
-      // stale-while-revalidate: return stale, refresh in background
       if (!this.inflight.has(key)) {
-        const p = loader().then(async (v) => { await this.set(key, v); return v; }).catch((err) => {
-          logger.warn({ err, key }, 'swr background refresh failed');
-          return entry.value;
-        }).finally(() => { this.inflight.delete(key); });
+        const p = loader()
+          .then(async (v) => {
+            await this.set(key, v);
+            return v;
+          })
+          .catch((err: unknown) => {
+            logger.warn({ err, key }, 'swr background refresh failed');
+            return entry.value;
+          })
+          .finally(() => {
+            this.inflight.delete(key);
+          });
         this.inflight.set(key, p);
       }
       return { value: entry.value, cache: 'stale' };
@@ -99,7 +129,14 @@ export class SwrCache<T> {
     geoMetrics.recordCache('miss');
     const existing = this.inflight.get(key);
     if (existing) return { value: await existing, cache: 'miss' };
-    const p = loader().then(async (v) => { await this.set(key, v); return v; }).finally(() => { this.inflight.delete(key); });
+    const p = loader()
+      .then(async (v) => {
+        await this.set(key, v);
+        return v;
+      })
+      .finally(() => {
+        this.inflight.delete(key);
+      });
     this.inflight.set(key, p);
     return { value: await p, cache: 'miss' };
   }

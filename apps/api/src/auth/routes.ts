@@ -12,7 +12,12 @@ import {
   verifyEmail,
 } from './service.js';
 
-const authLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 30, standardHeaders: true, legacyHeaders: false });
+const authLimiter = rateLimit({
+  windowMs: 15 * 60_000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -29,7 +34,9 @@ export function createAuthRouter(): Router {
   router.post('/register', async (req, res) => {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: { code: 'invalid_request', message: 'Invalid registration data' } });
+      res
+        .status(400)
+        .json({ error: { code: 'invalid_request', message: 'Invalid registration data' } });
       return;
     }
     try {
@@ -42,7 +49,9 @@ export function createAuthRouter(): Router {
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
       if (message.includes('duplicate key') || message.includes('users_email_key')) {
-        res.status(409).json({ error: { code: 'email_taken', message: 'Email already registered' } });
+        res
+          .status(409)
+          .json({ error: { code: 'email_taken', message: 'Email already registered' } });
         return;
       }
       res.status(500).json({ error: { code: 'internal_error', message: 'Registration failed' } });
@@ -66,7 +75,9 @@ export function createAuthRouter(): Router {
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
       if (message === 'INVALID_CREDENTIALS') {
-        res.status(401).json({ error: { code: 'invalid_credentials', message: 'Invalid email or password' } });
+        res
+          .status(401)
+          .json({ error: { code: 'invalid_credentials', message: 'Invalid email or password' } });
         return;
       }
       res.status(500).json({ error: { code: 'internal_error', message: 'Login failed' } });
@@ -75,12 +86,19 @@ export function createAuthRouter(): Router {
 
   router.post('/refresh', async (req, res) => {
     const token = z.string().min(10).safeParse(req.body?.refreshToken);
-    if (!token.success) { res.status(400).json({ error: { code: 'invalid_request', message: 'refreshToken required' } }); return; }
+    if (!token.success) {
+      res
+        .status(400)
+        .json({ error: { code: 'invalid_request', message: 'refreshToken required' } });
+      return;
+    }
     try {
       const result = await rotateRefreshToken(token.data);
       res.json({ token: result.accessToken, refreshToken: result.refreshToken });
     } catch {
-      res.status(401).json({ error: { code: 'invalid_refresh_token', message: 'Invalid or expired refresh token' } });
+      res.status(401).json({
+        error: { code: 'invalid_refresh_token', message: 'Invalid or expired refresh token' },
+      });
     }
   });
 
@@ -92,33 +110,54 @@ export function createAuthRouter(): Router {
 
   router.post('/password-reset/request', async (req, res) => {
     const email = z.string().email().safeParse(req.body?.email);
-    if (!email.success) { res.status(400).json({ error: { code: 'invalid_request', message: 'Valid email required' } }); return; }
+    if (!email.success) {
+      res.status(400).json({ error: { code: 'invalid_request', message: 'Valid email required' } });
+      return;
+    }
     const token = await createPasswordResetToken(email.data).catch(() => null);
     // In production, send email. Here we return token only in non-production for testability; never expose in prod.
-    const payload: any = { ok: true, message: 'If the account exists, a reset link has been issued.' };
+    const payload: { ok: true; message: string; devToken?: string } = {
+      ok: true,
+      message: 'If the account exists, a reset link has been issued.',
+    };
     if (process.env['NODE_ENV'] !== 'production' && token) payload.devToken = token;
     res.json(payload);
   });
 
   router.post('/password-reset/confirm', async (req, res) => {
-    const body = z.object({ token: z.string().min(10), password: z.string().min(8).max(200) }).safeParse(req.body);
-    if (!body.success) { res.status(400).json({ error: { code: 'invalid_request', message: 'Invalid payload' } }); return; }
+    const body = z
+      .object({ token: z.string().min(10), password: z.string().min(8).max(200) })
+      .safeParse(req.body);
+    if (!body.success) {
+      res.status(400).json({ error: { code: 'invalid_request', message: 'Invalid payload' } });
+      return;
+    }
     try {
       await resetPassword(body.data.token, body.data.password);
       res.json({ ok: true });
     } catch {
-      res.status(400).json({ error: { code: 'invalid_reset_token', message: 'Invalid or expired reset token' } });
+      res.status(400).json({
+        error: { code: 'invalid_reset_token', message: 'Invalid or expired reset token' },
+      });
     }
   });
 
   router.post('/verify-email', async (req, res) => {
     const token = z.string().min(10).safeParse(req.body?.token);
-    if (!token.success) { res.status(400).json({ error: { code: 'invalid_request', message: 'token required' } }); return; }
+    if (!token.success) {
+      res.status(400).json({ error: { code: 'invalid_request', message: 'token required' } });
+      return;
+    }
     try {
       await verifyEmail(token.data);
       res.json({ ok: true });
     } catch {
-      res.status(400).json({ error: { code: 'invalid_verification_token', message: 'Invalid or expired verification token' } });
+      res.status(400).json({
+        error: {
+          code: 'invalid_verification_token',
+          message: 'Invalid or expired verification token',
+        },
+      });
     }
   });
 

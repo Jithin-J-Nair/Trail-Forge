@@ -10,9 +10,11 @@ export type WikipediaSummary = {
 const summarySchema = z.object({
   title: z.string(),
   extract: z.string().optional(),
-  content_urls: z.object({
-    desktop: z.object({ page: z.string().url() }).optional(),
-  }).optional(),
+  content_urls: z
+    .object({
+      desktop: z.object({ page: z.string().url() }).optional(),
+    })
+    .optional(),
 });
 
 export async function fetchWikipediaSummary(
@@ -29,7 +31,10 @@ export async function fetchWikipediaSummary(
   options.signal?.addEventListener('abort', onAbort);
   try {
     const res = await fetchImpl(url, {
-      headers: { Accept: 'application/json', 'User-Agent': 'TrailForge/0.1 (geospatial verification)' },
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'TrailForge/0.1 (geospatial verification)',
+      },
       signal: controller.signal,
     });
     if (!res.ok) return null;
@@ -38,7 +43,9 @@ export async function fetchWikipediaSummary(
     return {
       title: json.data.title,
       ...(json.data.extract ? { extract: json.data.extract } : {}),
-      url: json.data.content_urls?.desktop?.page ?? `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(normalized)}`,
+      url:
+        json.data.content_urls?.desktop?.page ??
+        `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(normalized)}`,
       lang,
     };
   } catch {

@@ -17,14 +17,23 @@ export function createProfileRouter(): Router {
 
   router.get('/', async (req, res) => {
     const pool = getPool();
-    await pool.query(`INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING`, [req.authUser!.id]);
-    const { rows } = await pool.query(`SELECT interests, preferred_themes as "preferredThemes", preferred_duration_minutes as "preferredDurationMinutes", accessibility, languages FROM user_profiles WHERE user_id=$1`, [req.authUser!.id]);
+    await pool.query(
+      `INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING`,
+      [req.authUser!.id],
+    );
+    const { rows } = await pool.query(
+      `SELECT interests, preferred_themes as "preferredThemes", preferred_duration_minutes as "preferredDurationMinutes", accessibility, languages FROM user_profiles WHERE user_id=$1`,
+      [req.authUser!.id],
+    );
     res.json({ profile: rows[0] ?? null });
   });
 
   router.put('/', async (req, res) => {
     const parsed = profileSchema.safeParse(req.body);
-    if (!parsed.success) { res.status(400).json({ error: { code: 'invalid_request', message: 'Invalid profile' } }); return; }
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'invalid_request', message: 'Invalid profile' } });
+      return;
+    }
     const p = parsed.data;
     const pool = getPool();
     await pool.query(
@@ -37,9 +46,19 @@ export function createProfileRouter(): Router {
          accessibility=COALESCE($5::jsonb,user_profiles.accessibility),
          languages=COALESCE($6,user_profiles.languages),
          updated_at=now()`,
-      [req.authUser!.id, p.interests ?? null, p.preferredThemes ?? null, p.preferredDurationMinutes ?? null, p.accessibility ? JSON.stringify(p.accessibility) : null, p.languages ?? null],
+      [
+        req.authUser!.id,
+        p.interests ?? null,
+        p.preferredThemes ?? null,
+        p.preferredDurationMinutes ?? null,
+        p.accessibility ? JSON.stringify(p.accessibility) : null,
+        p.languages ?? null,
+      ],
     );
-    const { rows } = await pool.query(`SELECT interests, preferred_themes as "preferredThemes", preferred_duration_minutes as "preferredDurationMinutes", accessibility, languages FROM user_profiles WHERE user_id=$1`, [req.authUser!.id]);
+    const { rows } = await pool.query(
+      `SELECT interests, preferred_themes as "preferredThemes", preferred_duration_minutes as "preferredDurationMinutes", accessibility, languages FROM user_profiles WHERE user_id=$1`,
+      [req.authUser!.id],
+    );
     res.json({ profile: rows[0] });
   });
 

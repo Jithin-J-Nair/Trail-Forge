@@ -45,13 +45,31 @@ export async function generateTour(
           ...(deps.fetchImpl ? { fetchImpl: deps.fetchImpl } : {}),
         });
   } catch (err) {
-    const anyErr = err as any;
-    const diagnostics = anyErr?.diagnostics;
-    if (err instanceof OsmNotFoundError || anyErr?.code === 'NOT_FOUND') {
-      throw new ApiError(404, 'area_not_found', err instanceof Error ? err.message : 'Area not found', diagnostics);
+    const geo = err as { code?: string; diagnostics?: unknown };
+    const diagnostics = geo.diagnostics;
+    if (err instanceof OsmNotFoundError || geo.code === 'NOT_FOUND') {
+      throw new ApiError(
+        404,
+        'area_not_found',
+        err instanceof Error ? err.message : 'Area not found',
+        diagnostics,
+      );
     }
-    if (err instanceof OsmUpstreamError || anyErr?.code === 'UPSTREAM_ERROR' || anyErr?.code === 'CIRCUIT_OPEN' || anyErr?.code === 'TIMEOUT' || anyErr?.code === 'RATE_LIMITED' || anyErr?.code === 'CONFIG_MISSING') {
-      throw new ApiError(502, 'upstream_error', err instanceof Error ? err.message : 'Map data upstream failed', diagnostics, { code: anyErr?.code });
+    if (
+      err instanceof OsmUpstreamError ||
+      geo.code === 'UPSTREAM_ERROR' ||
+      geo.code === 'CIRCUIT_OPEN' ||
+      geo.code === 'TIMEOUT' ||
+      geo.code === 'RATE_LIMITED' ||
+      geo.code === 'CONFIG_MISSING'
+    ) {
+      throw new ApiError(
+        502,
+        'upstream_error',
+        err instanceof Error ? err.message : 'Map data upstream failed',
+        diagnostics,
+        { code: geo.code },
+      );
     }
     throw err;
   }
@@ -67,8 +85,8 @@ export async function generateTour(
   });
   const llmMs = now() - llmStart;
 
-  const provenance = 'provenance' in scene ? (scene as any).provenance : undefined;
-  const devMode = Boolean((scene as any).devMode);
+  const provenance = scene.provenance;
+  const devMode = Boolean(scene.devMode);
   const emptyMessage =
     scene.pois.length === 0
       ? 'No places found for this theme nearby. Try another theme or a larger radius.'
@@ -85,8 +103,16 @@ export async function generateTour(
         const wikidataQid = p.osmTags['wikidata'];
         const wikipediaRef = p.osmTags['wikipedia'] ?? p.name;
         const [wikidata, wikipedia] = await Promise.all([
-          wikidataQid ? fetchWikidataEntity(wikidataQid, { ...(deps.fetchImpl ? { fetchImpl: deps.fetchImpl } : {}) }) : Promise.resolve(null),
-          wikipediaRef ? fetchWikipediaSummary(wikipediaRef, { ...(deps.fetchImpl ? { fetchImpl: deps.fetchImpl } : {}) }) : Promise.resolve(null),
+          wikidataQid
+            ? fetchWikidataEntity(wikidataQid, {
+                ...(deps.fetchImpl ? { fetchImpl: deps.fetchImpl } : {}),
+              })
+            : Promise.resolve(null),
+          wikipediaRef
+            ? fetchWikipediaSummary(wikipediaRef, {
+                ...(deps.fetchImpl ? { fetchImpl: deps.fetchImpl } : {}),
+              })
+            : Promise.resolve(null),
         ]);
         if (!wikidata && !wikipedia) return null;
         return {
@@ -99,14 +125,25 @@ export async function generateTour(
   ).filter((e): e is NonNullable<typeof e> => e !== null);
 
   const totalClaims = grounded.content.flatMap((c) => [...c.ja, ...c.en]).length;
-  const verifiedClaims = grounded.content.filter((c) => c.status === 'verified').flatMap((c) => [...c.ja, ...c.en]).length;
+  const verifiedClaims = grounded.content
+    .filter((c) => c.status === 'verified')
+    .flatMap((c) => [...c.ja, ...c.en]).length;
   const verificationCoverage = totalClaims > 0 ? verifiedClaims / totalClaims : 0;
-  const sourcedPois = scene.pois.filter((p) => p.osmTags && Object.keys(p.osmTags).length > 0).length;
+  const sourcedPois = scene.pois.filter(
+    (p) => p.osmTags && Object.keys(p.osmTags).length > 0,
+  ).length;
   const sourceQuality = scene.pois.length > 0 ? sourcedPois / scene.pois.length : 0;
   const unsupportedClaims = grounded.content.filter((c) => c.status !== 'verified').length;
   const missingMetadata = scene.pois.filter((p) => !p.name || !p.category).length;
+  const claimSupport =
+    grounded.content.length === 0
+      ? 0
+      : Math.max(0, 1 - unsupportedClaims / grounded.content.length);
   const trustScore = {
-    score: Math.max(0, Math.min(100, Math.round((verificationCoverage * 60 + sourceQuality * 30 + Math.max(0, 1 - unsupportedClaims / Math.max(1, grounded.content.length)) * 10) * 100))),
+    score: Math.max(
+      0,
+      Math.min(100, Math.round(verificationCoverage * 60 + sourceQuality * 30 + claimSupport * 10)),
+    ),
     verificationCoverage,
     sourceQuality,
     unsupportedClaims,

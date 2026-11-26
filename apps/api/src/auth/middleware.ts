@@ -1,7 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
 import { getUserById, verifyToken, type AuthUser } from './service.js';
 
+/* Express request augmentation — namespace is the supported typing pattern. */
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       authUser?: AuthUser;
