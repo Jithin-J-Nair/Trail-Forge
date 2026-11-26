@@ -1,11 +1,12 @@
 import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import type { GenerateResponse } from '@trailforge/shared';
 import type { WebGLRenderer } from 'three';
 import { Buildings } from './Buildings.js';
+import { DayNightLights } from './DayNightLights.js';
 import { DebugStats } from './DebugStats.js';
-import { FlyThroughController } from './FlyThrough.js';
+import { FppWalkController } from './FppWalk.js';
 import { IntroCamera } from './IntroCamera.js';
 import { KeyboardNav } from './KeyboardNav.js';
 import { Pins } from './Pins.js';
@@ -13,6 +14,7 @@ import { dprForQuality, probeQuality } from './quality.js';
 import { Roads } from './Roads.js';
 import { RouteLine } from './RouteLine.js';
 import { SelectFlyTo } from './SelectFlyTo.js';
+import { getSolarState } from './solar.js';
 import { WebGlFallback } from './WebGlFallback.js';
 
 function supportsWebGL(): boolean {
@@ -22,19 +24,6 @@ function supportsWebGL(): boolean {
   } catch {
     return false;
   }
-}
-
-function Lights() {
-  return (
-    <>
-      <color attach="background" args={['#07090F']} />
-      <fog attach="fog" args={['#07090F', 100, 400]} />
-      <hemisphereLight args={['#2a3348', '#07090F', 0.55]} />
-      <directionalLight position={[40, 100, 20]} intensity={0.5} color="#c8d0e0" />
-      <pointLight position={[-50, 35, -30]} intensity={0.35} color="#9eb0c8" distance={220} />
-      <pointLight position={[60, 28, 50]} intensity={0.25} color="#b8a890" distance={200} />
-    </>
-  );
 }
 
 export function Scene({
@@ -54,6 +43,19 @@ export function Scene({
   const dpr = dprForQuality(quality);
   const reduceMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const initialSolar = useMemo(
+    () => getSolarState(data.center.lat, data.center.lon),
+    [data.center.lat, data.center.lon],
+  );
+  const [timeLabel, setTimeLabel] = useState(initialSolar.localTimeLabel);
+  const [isDay, setIsDay] = useState(initialSolar.isDay);
+  const [dayFactor, setDayFactor] = useState(initialSolar.dayFactor);
+
+  const onSolar = useCallback((label: string, day: boolean, factor: number) => {
+    setTimeLabel(label);
+    setIsDay(day);
+    setDayFactor(factor);
+  }, []);
 
   useEffect(() => {
     setWebglOk(supportsWebGL());
@@ -71,25 +73,25 @@ export function Scene({
         onCreated={({ gl: renderer }) => setGl(renderer)}
       >
         <Suspense fallback={null}>
-          <Lights />
-          <IntroCamera />
+          <DayNightLights lat={data.center.lat} lon={data.center.lon} onSolar={onSolar} />
+          <IntroCamera enabled={!playing} />
           <Roads roads={data.scene.roads} />
-          <Buildings buildings={data.scene.buildings} />
+          <Buildings buildings={data.scene.buildings} dayFactor={dayFactor} />
           <RouteLine pois={data.pois} orderedPoiIds={data.route.orderedPoiIds} />
           <Pins pois={data.pois} content={data.content} />
-          <SelectFlyTo pois={data.pois} />
-          <FlyThroughController
+          {!playing ? <SelectFlyTo pois={data.pois} /> : null}
+          <FppWalkController
             pois={data.pois}
             orderedPoiIds={data.route.orderedPoiIds}
             playing={playing}
             onStop={() => onPlayStop?.()}
           />
           <KeyboardNav data={data} />
-          {quality !== 'low' && !reduceMotion ? (
+          {quality !== 'low' && !reduceMotion && dayFactor < 0.45 ? (
             <EffectComposer multisampling={0}>
               <Bloom
-                intensity={0.28}
-                luminanceThreshold={0.72}
+                intensity={0.22}
+                luminanceThreshold={0.75}
                 luminanceSmoothing={0.4}
                 mipmapBlur
               />
@@ -97,6 +99,12 @@ export function Scene({
           ) : null}
         </Suspense>
       </Canvas>
+      <p
+        className="pointer-events-none absolute bottom-16 left-1/2 z-20 -translate-x-1/2 rounded-full border border-trail-border bg-black/40 px-3 py-1 text-[10px] tracking-wide text-trail-muted backdrop-blur-md md:bottom-20"
+        role="status"
+      >
+        Local {timeLabel} · {isDay ? 'Day' : 'Night'} · OSM extrusions
+      </p>
       <DebugStats enabled={debug} gl={gl} />
     </div>
   );

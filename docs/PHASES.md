@@ -144,3 +144,11 @@
 3. Live Generate still uses the same dusk HUD — just quieter materials over real OSM footprints.
 4. Assumption: empty scene until Generate is preferable to a fake dense city that reads as “the product.”
 5. Interview line: “Demo is opt-in; the 3D look stays dusk, not a nightclub.”
+
+## HQ cinematic FPP + solar day/night
+
+1. Scene lighting follows approximate solar elevation from the tour lat/lon (longitude-based local clock); buildings fade windows day→night via `uDay`.
+2. Route Play is a GSAP MotionPathPlugin first-person walk at eye height along the ordered POI path (Esc/Stop ends); orbit idle pauses while walking.
+3. OSM footprint extrusions stay the geometry source — not photoreal 3D tiles (stack tradeoff).
+4. Assumption: mid-latitude solar formula + lon offset is enough for atmosphere; no tz database in the browser.
+5. Interview line: “Day/night is physics from coordinates; the walk is deterministic MotionPath on the grounded route.”
