@@ -16,6 +16,12 @@ import { createLlmProvider } from './llm/create-provider.js';
 import { logger } from './logger.js';
 import type { GenerateDeps } from './pipeline/generate-tour.js';
 import { createGenerateRouter } from './routes/generate.js';
+import { createAuthRouter } from './auth/routes.js';
+import { createItinerariesRouter } from './itineraries/routes.js';
+import { createProfileRouter } from './profile/routes.js';
+import { createAnalyticsRouter } from './analytics/routes.js';
+import { getGeoHealth } from './geo/index.js';
+import { dbHealthcheck } from './db/pool.js';
 
 export type CreateAppOptions = {
   llm?: LlmProvider;
@@ -52,6 +58,21 @@ export function createApp(options: CreateAppOptions = {}) {
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
+
+  app.get('/api/geo/health', (_req, res) => {
+    res.json(getGeoHealth());
+  });
+
+  app.get('/api/ready', async (_req, res) => {
+    const dbOk = process.env['DATABASE_URL'] ? await dbHealthcheck() : true;
+    const ok = dbOk;
+    res.status(ok ? 200 : 503).json({ status: ok ? 'ready' : 'degraded', checks: { database: dbOk } });
+  });
+
+  app.use('/api/auth', createAuthRouter());
+  app.use('/api/itineraries', createItinerariesRouter());
+  app.use('/api/profile', createProfileRouter());
+  app.use('/api/analytics', createAnalyticsRouter());
 
   const generateLlm = options.ai ?? options.generateDeps?.llm;
   app.use(
