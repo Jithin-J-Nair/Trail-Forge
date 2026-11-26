@@ -5,21 +5,37 @@ import { useTourStore } from '../store/tour-store.js';
 
 const THEMES = ThemeSchema.options;
 
+type AuthUser = { id: string; email: string; displayName: string | null };
+
 export function SearchPanel({
   lang,
   onLangChange,
   loadingStage,
   onGenerate,
   onCancel,
+  user,
+  onLogin,
+  onRegister,
+  onLogout,
 }: {
   lang: UiLang;
   onLangChange: (lang: UiLang) => void;
   loadingStage: 'locating' | 'fetching' | 'writing' | 'building' | null;
   onGenerate: () => void;
   onCancel: () => void;
+  user: AuthUser | null;
+  onLogin: (email: string, password: string) => Promise<void>;
+  onRegister: (email: string, password: string, displayName?: string) => Promise<void>;
+  onLogout: () => void;
 }) {
   const { draft, setDraft } = useTourStore();
   const [advanced, setAdvanced] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   return (
     <form
@@ -127,6 +143,48 @@ export function SearchPanel({
           {t(lang, loadingStage)}
         </p>
       ) : null}
+
+      <div className="border-t border-trail-border/60 pt-3">
+        {user ? (
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <span className="text-trail-muted truncate">{user.displayName ?? user.email}</span>
+            <button type="button" className="glass-btn-ghost px-2 py-1 text-xs" onClick={onLogout}>Logout</button>
+          </div>
+        ) : (
+          <div className="grid gap-2">
+            <div className="flex gap-2 text-xs">
+              <button type="button" className={`glass-chip ${authMode === 'login' ? 'glass-chip-active' : ''}`} onClick={() => setAuthMode('login')}>Login</button>
+              <button type="button" className={`glass-chip ${authMode === 'register' ? 'glass-chip-active' : ''}`} onClick={() => setAuthMode('register')}>Register</button>
+            </div>
+            {authMode === 'register' ? (
+              <input className="glass-input text-xs" placeholder="Display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+            ) : null}
+            <input className="glass-input text-xs" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input className="glass-input text-xs" placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            {authError ? <p className="text-xs text-red-400">{authError}</p> : null}
+            <button
+              type="button"
+              className="glass-btn-ghost px-3 py-1.5 text-xs"
+              disabled={authBusy}
+              onClick={async () => {
+                setAuthBusy(true);
+                setAuthError(null);
+                try {
+                  if (authMode === 'login') await onLogin(email, password);
+                  else await onRegister(email, password, displayName || undefined);
+                  setPassword('');
+                } catch (e) {
+                  setAuthError((e as Error).message);
+                } finally {
+                  setAuthBusy(false);
+                }
+              }}
+            >
+              {authBusy ? '...' : authMode === 'login' ? 'Login' : 'Create account'}
+            </button>
+          </div>
+        )}
+      </div>
     </form>
   );
 }

@@ -21,7 +21,17 @@ const center = { lon: 139.7967, lat: 35.7148 };
 
 function fixtureScene() {
   const scene = transformOverpass(center, fixture);
-  return { ...scene, displayName: 'Asakusa', fromCache: false };
+  return {
+    ...scene,
+    displayName: 'Asakusa',
+    fromCache: false,
+    provenance: {
+      mode: 'live_osm' as const,
+      source: 'OpenStreetMap (test fixture)',
+      license: 'ODbL-1.0',
+      attribution: '© OpenStreetMap contributors',
+    },
+  };
 }
 
 describe('POST /api/generate', () => {

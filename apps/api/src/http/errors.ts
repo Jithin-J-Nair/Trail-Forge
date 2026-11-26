@@ -1,5 +1,11 @@
 export type ApiErrorBody = {
-  error: { code: string; message: string; requestId?: string };
+  error: {
+    code: string;
+    message: string;
+    requestId?: string;
+    diagnostics?: unknown;
+    details?: unknown;
+  };
 };
 
 export class ApiError extends Error {
@@ -7,6 +13,8 @@ export class ApiError extends Error {
     readonly status: number,
     readonly code: string,
     message: string,
+    readonly diagnostics?: unknown,
+    readonly details?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -18,6 +26,8 @@ export class ApiError extends Error {
         code: this.code,
         message: this.message,
         ...(requestId ? { requestId } : {}),
+        ...(this.diagnostics ? { diagnostics: this.diagnostics } : {}),
+        ...(this.details ? { details: this.details } : {}),
       },
     };
   }

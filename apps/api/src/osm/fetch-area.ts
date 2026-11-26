@@ -1,12 +1,23 @@
 import type { Theme } from '@trailforge/shared';
-import { cacheKey, createOsmCache, type OsmCache } from './cache.js';
-import { geocode } from './geocode.js';
-import { fetchOverpassBundle } from './overpass.js';
-import { transformOverpass, type TransformedScene } from './transform.js';
+import { resolveAreaScene, type GeoResolveResult } from '../geo/index.js';
+import type { TransformedScene } from './transform.js';
+
+export type DataProvenance = {
+  mode: 'live_osm' | 'local_dev';
+  source: string;
+  license: string;
+  attribution: string;
+  area?: string;
+  capturedAt?: string;
+  note?: string;
+};
 
 export type FetchAreaResult = TransformedScene & {
   displayName: string;
   fromCache: boolean;
+  provenance: DataProvenance;
+  devMode?: boolean;
+  diagnostics?: GeoResolveResult['diagnostics'];
 };
 
 export async function fetchAreaScene(
@@ -14,30 +25,17 @@ export async function fetchAreaScene(
   theme: Theme,
   radiusMeters: number,
   options: {
-    cache?: OsmCache;
     fetchImpl?: typeof fetch;
     signal?: AbortSignal;
   } = {},
 ): Promise<FetchAreaResult> {
-  const cache = options.cache ?? createOsmCache();
-  const netOpts = {
-    ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
-    ...(options.signal ? { signal: options.signal } : {}),
+  const r = await resolveAreaScene(query, theme, radiusMeters, options.signal);
+  return {
+    ...r.scene,
+    displayName: r.displayName,
+    fromCache: false,
+    provenance: r.provenance,
+    devMode: r.devMode,
+    diagnostics: r.diagnostics,
   };
-  const place = await geocode(query, netOpts);
-  const key = cacheKey(place.lon, place.lat, radiusMeters, theme);
-  const cached = await cache.get(key);
-  if (cached) {
-    return { ...cached, displayName: place.displayName, fromCache: true };
-  }
-
-  const bundle = await fetchOverpassBundle(
-    { lon: place.lon, lat: place.lat },
-    radiusMeters,
-    theme,
-    netOpts,
-  );
-  const scene = transformOverpass({ lon: place.lon, lat: place.lat }, bundle);
-  await cache.set(key, scene);
-  return { ...scene, displayName: place.displayName, fromCache: false };
 }

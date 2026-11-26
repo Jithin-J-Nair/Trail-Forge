@@ -10,6 +10,11 @@ const EnvSchema = z.object({
   OLLAMA_HOST: z.string().min(1).optional(),
   OLLAMA_MODEL: z.string().min(1).optional(),
   LLM_PROVIDER: z.enum(['mock', 'claude', 'ollama']).default('mock'),
+  REDIS_URL: z.string().min(1).optional(),
+  GEOAPIFY_API_KEY: z.string().min(1).optional(),
+  MAPBOX_ACCESS_TOKEN: z.string().min(1).optional(),
+  OPENROUTESERVICE_API_KEY: z.string().min(1).optional(),
+  LOCAL_DEV_DATA_SOURCE: z.enum(['true', 'false']).default('false'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -26,6 +31,11 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     OLLAMA_HOST: source['OLLAMA_HOST'] || undefined,
     OLLAMA_MODEL: source['OLLAMA_MODEL'] || undefined,
     LLM_PROVIDER: source['LLM_PROVIDER'] || undefined,
+    REDIS_URL: source['REDIS_URL'] || undefined,
+    GEOAPIFY_API_KEY: source['GEOAPIFY_API_KEY'] || undefined,
+    MAPBOX_ACCESS_TOKEN: source['MAPBOX_ACCESS_TOKEN'] || undefined,
+    OPENROUTESERVICE_API_KEY: source['OPENROUTESERVICE_API_KEY'] || undefined,
+    LOCAL_DEV_DATA_SOURCE: source['LOCAL_DEV_DATA_SOURCE'] || undefined,
   });
 
   if (!parsed.success) {

@@ -36,9 +36,15 @@ export { RoutePlanSchema, type RoutePlan } from './schemas/route-plan.js';
 export {
   SceneSchema,
   VerificationSummarySchema,
+  DataProvenanceSchema,
+  PoiEnrichmentSchema,
+  TrustScoreSchema,
   GenerateResponseSchema,
   type Scene,
   type VerificationSummary,
+  type DataProvenance,
+  type PoiEnrichment,
+  type TrustScore,
   type GenerateResponse,
 } from './schemas/generate-response.js';
 export { lonLatToLocalMeters, localMetersToLonLat } from './geo/projection.js';
