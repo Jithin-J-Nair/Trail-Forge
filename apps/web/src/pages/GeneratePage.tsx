@@ -1,5 +1,6 @@
 import type { GenerateResponse } from '@trailforge/shared';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getToken, me, saveItinerary, setToken, type AuthUser } from '../api.js';
 import { Footer } from '../components/Footer.js';
 import { asDemoFixture, isDemoMode } from '../demo.js';
@@ -8,6 +9,7 @@ import { detectLang, t, type UiLang } from '../i18n/messages.js';
 import { useTourSceneStore } from '../scene/tour-scene-store.js';
 import { useTourStore } from '../store/tour-store.js';
 import type { ApprovedContent } from '../ui/export.js';
+import { EmptyCanvas } from '../ui/EmptyCanvas.js';
 import { ResultPanel } from '../ui/ResultPanel.js';
 import { RouteBar } from '../ui/RouteBar.js';
 import { SearchPanel } from '../ui/SearchPanel.js';
@@ -24,6 +26,7 @@ type Stage = 'locating' | 'fetching' | 'writing' | 'building';
 export function GeneratePage() {
   const { draft } = useTourStore();
   const { response, setResponse, setUiLanguage, setStatus } = useTourSceneStore();
+  const [searchParams] = useSearchParams();
   const [lang, setLang] = useState<UiLang>(() => detectLang());
   const [stage, setStage] = useState<Stage | null>(null);
   const [content, setContent] = useState<ApprovedContent[]>([]);
@@ -34,10 +37,11 @@ export function GeneratePage() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const debug = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return new URLSearchParams(window.location.search).get('debug') === '1';
-  }, []);
+  const debug = useMemo(() => searchParams.get('debug') === '1', [searchParams]);
+  const demoMode = useMemo(
+    () => searchParams.get('demo') === '1' || import.meta.env.VITE_DEMO_MODE === 'true',
+    [searchParams],
+  );
 
   useEffect(() => {
     setUiLanguage(lang);
@@ -48,12 +52,12 @@ export function GeneratePage() {
 
   useEffect(() => {
     // Only paint SAMPLE fixture when DEMO is explicit — not on every /app load.
-    if (!isDemoMode()) return;
+    if (!demoMode) return;
     const demo = asDemoFixture(SAMPLE_RESPONSE);
     setResponse(demo);
     setContent(demo.content.map((c) => ({ ...c })));
     setDemoActive(true);
-  }, [setResponse]);
+  }, [demoMode, setResponse]);
 
   useEffect(() => {
     if (!getToken()) return;
@@ -75,19 +79,31 @@ export function GeneratePage() {
 
   const handleSave = useCallback(async () => {
     if (!response) return;
-    await saveItinerary({
-      query: draft.query,
-      theme: draft.theme,
-      durationMinutes: draft.durationMinutes,
-      radiusMeters: draft.radiusMeters,
-      response,
-    });
-    setToast('Itinerary saved');
-  }, [draft, response]);
+    if (!user) {
+      setToast(t(lang, 'saveNeedSignIn'));
+      return;
+    }
+    try {
+      await saveItinerary({
+        query: draft.query,
+        theme: draft.theme,
+        durationMinutes: draft.durationMinutes,
+        radiusMeters: draft.radiusMeters,
+        response,
+      });
+      setToast(t(lang, 'saved'));
+    } catch (err) {
+      setToast((err as Error).message || t(lang, 'saveFailed'));
+    }
+  }, [draft, lang, response, user]);
 
   const runGenerate = useCallback(async () => {
     if (!navigator.onLine) {
-      applyFixture(t(lang, 'offline'));
+      if (isDemoMode()) {
+        applyFixture(t(lang, 'offline'));
+      } else {
+        setToast(t(lang, 'offline'));
+      }
       return;
     }
     if (!draft.query || !draft.theme) {
@@ -172,11 +188,13 @@ export function GeneratePage() {
             onPlayStop={() => setPlaying(false)}
           />
         </Suspense>
-      ) : null}
+      ) : (
+        <EmptyCanvas lang={lang} />
+      )}
 
       {(demoActive || response?.demo || response?.devMode) && (
         <p
-          className="absolute left-1/2 top-14 z-40 -translate-x-1/2 rounded-full border border-trail-review/50 bg-trail-review/15 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-trail-review"
+          className="absolute left-1/2 top-14 z-40 -translate-x-1/2 rounded-md border border-trail-review/50 bg-trail-review/15 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-trail-review"
           role="status"
         >
           {response?.devMode ? 'DEV MODE' : 'DEMO DATA'}

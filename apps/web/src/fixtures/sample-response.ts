@@ -155,6 +155,6 @@ export const SAMPLE_RESPONSE: GenerateResponse = {
     source: 'SAMPLE_RESPONSE UI fixture',
     license: 'N/A (demo fixture)',
     attribution: 'DEMO DATA — not live geographic data',
-    note: 'Shown under DEMO_MODE (?demo=1 / VITE_DEMO_MODE) or as the initial glass HUD paint.',
+    note: 'Shown only under DEMO_MODE (?demo=1 / VITE_DEMO_MODE) or labeled offline DEMO fallback.',
   },
 };

@@ -74,13 +74,16 @@
 
 ## Phase 2 — Core app / map / POI / persistence
 
+**Track:** TF-36  
+**Branch:** `cursor/recon-phase-2-core-9c79`
+
 ### Deliverables
 
 - Ensure #16 behavior on main: empty `/app` until Generate or explicit `?demo=1`.
 - Honest empty-state copy + CTA; DEMO badge placement below nav.
 - Persistence UX: save itinerary when auth/DB available; clear offline/error toasts without painting fake cities (except labeled DEMO).
 - POI list / selection sync hygiene; remove any remaining silent fixture paths.
-- Optional: light MapLibre **minimap** behind or beside scene (read-only OSM attribution) — only if it does not regress R3F budget.
+- Optional: light MapLibre **minimap** behind or beside scene (read-only OSM attribution) — only if it does not regress R3F budget. **Deferred** (Karpathy: not required for honesty gates).
 
 ### Success checks
 

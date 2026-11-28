@@ -15,7 +15,9 @@ describe('useTourSceneStore', () => {
   });
 
   it('stores response and selection', () => {
+    useTourSceneStore.getState().setSelectedPoiId('node/1');
     useTourSceneStore.getState().setResponse(SAMPLE_RESPONSE);
+    expect(useTourSceneStore.getState().selectedPoiId).toBeNull();
     useTourSceneStore.getState().setSelectedPoiId('node/1');
     const state = useTourSceneStore.getState();
     expect(state.status).toBe('ready');

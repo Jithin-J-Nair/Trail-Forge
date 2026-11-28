@@ -84,9 +84,9 @@ export function ResultPanel({
                 setSaveMsg(null);
                 try {
                   await onSave();
-                  setSaveMsg('Saved');
+                  setSaveMsg(t(lang, 'saved'));
                 } catch (e) {
-                  setSaveMsg((e as Error).message);
+                  setSaveMsg((e as Error).message || t(lang, 'saveFailed'));
                 } finally {
                   setSaving(false);
                 }
@@ -96,7 +96,9 @@ export function ResultPanel({
             </button>
             {saveMsg ? <span className="text-xs text-trail-muted">{saveMsg}</span> : null}
           </div>
-        ) : null}
+        ) : (
+          <p className="mt-2 text-xs text-trail-muted">{t(lang, 'saveNeedSignIn')}</p>
+        )}
       </div>
 
       <ul className="grid gap-1.5">
