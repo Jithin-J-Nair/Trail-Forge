@@ -5,13 +5,15 @@ import { t, type UiLang } from '../i18n/messages.js';
 export function EmptyCanvas({ lang }: { lang: UiLang }) {
   return (
     <div
-      className="absolute inset-0 z-10 flex items-center justify-center bg-trail-bg px-6"
+      className="absolute inset-0 z-10 flex items-center justify-center bg-trail-bg px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
       data-testid="empty-canvas"
+      role="status"
+      aria-live="polite"
     >
       <div className="max-w-md text-center">
-        <p className="font-display text-3xl font-semibold tracking-tight text-trail-fog sm:text-4xl">
+        <h1 className="font-display text-3xl font-semibold tracking-tight text-trail-fog sm:text-4xl">
           {t(lang, 'emptyTitle')}
-        </p>
+        </h1>
         <p className="mt-3 text-sm leading-relaxed text-trail-muted sm:text-base">
           {t(lang, 'emptyBody')}
         </p>

@@ -78,7 +78,7 @@ export function SearchPanel({
 
       <button
         type="button"
-        className="text-left text-xs font-medium text-trail-cyan/90 hover:text-trail-cyan"
+        className="text-left text-xs font-medium text-trail-teal/90 hover:text-trail-teal"
         onClick={() => setAdvanced((v) => !v)}
         aria-expanded={advanced}
       >
@@ -123,7 +123,7 @@ export function SearchPanel({
         ) : null}
       </div>
       {loadingStage ? (
-        <p className="text-xs text-trail-cyan" aria-live="polite">
+        <p className="text-xs text-trail-teal" aria-live="polite">
           {t(lang, loadingStage)}
         </p>
       ) : null}

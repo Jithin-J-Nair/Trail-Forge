@@ -174,24 +174,33 @@ export function GeneratePage() {
 
   return (
     <div className="relative h-[100dvh] w-screen overflow-hidden bg-trail-bg text-trail-fog">
-      {response ? (
-        <Suspense
-          fallback={
-            <div className="absolute inset-0 flex items-center justify-center bg-trail-bg text-sm text-trail-muted">
-              Loading 3D scene…
-            </div>
-          }
-        >
-          <Scene
-            data={response}
-            debug={debug}
-            cameraMode={cameraMode}
-            onCameraModeChange={setCameraMode}
-          />
-        </Suspense>
-      ) : (
-        <EmptyCanvas lang={lang} />
-      )}
+      <main id="main" className="absolute inset-0">
+        {response ? (
+          <Suspense
+            fallback={
+              <div
+                className="absolute inset-0 flex items-center justify-center bg-trail-bg text-sm text-trail-muted"
+                role="status"
+                aria-live="polite"
+              >
+                Loading 3D scene…
+              </div>
+            }
+          >
+            <Scene
+              data={response}
+              debug={debug}
+              cameraMode={cameraMode}
+              onCameraModeChange={setCameraMode}
+            />
+          </Suspense>
+        ) : (
+          <EmptyCanvas lang={lang} />
+        )}
+      </main>
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {stage ? t(lang, stage) : null}
+      </div>
 
       {(demoActive || response?.demo || response?.devMode) && (
         <p

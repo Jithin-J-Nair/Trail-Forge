@@ -17,7 +17,7 @@ export function Toast({
         {onRetry ? (
           <button
             type="button"
-            className="text-trail-cyan underline-offset-2 hover:underline"
+            className="text-trail-teal underline-offset-2 hover:underline"
             onClick={onRetry}
           >
             Retry

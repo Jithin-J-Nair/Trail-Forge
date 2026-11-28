@@ -14,5 +14,6 @@ describe('LandingPage', () => {
     expect(screen.getByRole('heading', { name: /Walk a real city/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Generate a tour/i })).toHaveAttribute('href', '/app');
     expect(screen.getByText('© OpenStreetMap contributors')).toBeInTheDocument();
+    expect(document.getElementById('main')).toBeTruthy();
   });
 });

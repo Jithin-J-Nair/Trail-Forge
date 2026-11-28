@@ -130,7 +130,7 @@ export function ResultPanel({
                 type="button"
                 className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm transition ${
                   selected === poi.id
-                    ? 'border-trail-cyan/40 bg-trail-cyan/10'
+                    ? 'border-trail-teal/40 bg-trail-teal/10'
                     : 'border-transparent bg-white/[0.03] hover:border-trail-border'
                 }`}
                 onClick={() => setSelected(poi.id)}
@@ -223,7 +223,7 @@ function DetailCard({
       ) : null}
       <button
         type="button"
-        className="mt-3 text-xs text-trail-cyan underline-offset-2 hover:underline"
+        className="mt-3 text-xs text-trail-teal underline-offset-2 hover:underline"
         onClick={() => setOpen((v) => !v)}
       >
         {t(lang, 'whyTrusted')}

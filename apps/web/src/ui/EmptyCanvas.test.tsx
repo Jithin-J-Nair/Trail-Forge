@@ -11,7 +11,7 @@ describe('EmptyCanvas', () => {
       </MemoryRouter>,
     );
     expect(screen.getByTestId('empty-canvas')).toBeInTheDocument();
-    expect(screen.getByText('No city loaded')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'No city loaded' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Open labeled DEMO city/i })).toHaveAttribute(
       'href',
       '/app?demo=1',

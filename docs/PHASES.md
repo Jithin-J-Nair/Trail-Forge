@@ -192,3 +192,11 @@
 3. LLM titles kept only if they cite a real ordered POI name — no invented places in narrative titles.
 4. ResultPanel shows routing label + trimmed stop count; `docs/ROUTING.md` records the contract.
 5. Interview line: “Phase 6 keeps route order in code—scored, trimmed, and measured honestly without LLM geometry.”
+
+## Reconstruction Phase 7 summary — polish + a11y
+
+1. Skip link + `#main` landmarks; landing/HUD motion gated with `motion-safe:` and reduced-motion CSS.
+2. KeyboardNav no longer steals Tab; arrows + Escape only, ignored while typing in inputs.
+3. Empty/loading/error: EmptyCanvas status, Suspense + stage `aria-live`, Toast alert; mobile sheet safe-area + dialog label.
+4. Replaced leftover cyan HUD classes with teal; PERFORMANCE.md a11y/runtime notes refreshed.
+5. Interview line: “Phase 7 is quiet polish—keyboard that respects forms, motion that respects preference, and honest empty states.”

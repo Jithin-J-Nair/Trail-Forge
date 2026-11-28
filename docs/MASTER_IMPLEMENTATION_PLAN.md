@@ -173,11 +173,15 @@
 
 ## Phase 7 — Polish
 
+**Track:** TF-41  
+**Branch:** `cursor/recon-phase-7-polish-9c79`
+
 ### Deliverables
 
 - Motion polish across landing + HUD; remove leftover neon tokens.
 - Adaptive quality pass after GSAP/tiles; update `docs/PERFORMANCE.md` measurements.
 - A11y: focus order, aria-live, contrast on new tokens.
+- Loading / error / empty honesty; mobile safe-area + keyboard (no Tab hijack).
 
 ### Success checks
 

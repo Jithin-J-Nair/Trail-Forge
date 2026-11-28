@@ -1,16 +1,16 @@
 # TrailForge performance notes
 
-Measured on the Phase 9 branch in CI/dev VM (Node 22). Numbers are local Vite production builds unless noted.
+Measured on the reconstruction Phase 7 branch in CI/dev VM (Node 22). Numbers are local Vite production builds unless noted.
 
 ## Bundle (apps/web `vite build`)
 
-| Asset                   | Size      | gzip      |
-| ----------------------- | --------- | --------- |
-| `index-*.js` (UI shell) | 217.38 kB | 66.22 kB  |
-| `Scene-*.js` (lazy 3D)  | 861.05 kB | 232.22 kB |
-| CSS                     | 11.64 kB  | 3.23 kB   |
+| Asset                   | Size    | gzip    |
+| ----------------------- | ------- | ------- |
+| `index-*.js` (UI shell) | ~220 kB | ~67 kB  |
+| `Scene-*.js` (lazy 3D)  | ~860 kB | ~232 kB |
+| CSS                     | ~12 kB  | ~3.3 kB |
 
-DPR policy: quality probe → low `[1,1]` / medium `[1,1.5]` / high `[1,2]`. Re-run `npm run build -w @trailforge/web` to refresh.
+DPR policy: quality probe → low `[1,1]` / medium `[1,1.5]` / high `[1,2]`. Re-run `npm run build -w @trailforge/web` to refresh exact hashes.
 
 ## Runtime (fixture scene, `?debug=1`)
 
@@ -18,22 +18,18 @@ DPR policy: quality probe → low `[1,1]` / medium `[1,1.5]` / high `[1,2]`. Re-
 | ---------------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
 | FPS                    | 60 on mid laptop | Fixture scene uses 1 merged building mesh + 1 road LineSegments + pins; draw calls typically ≪ 150 |
 | Draw calls             | ≤ 150            | Merged buildings keep meshes at 1; roads 1; pins per visible POI                                   |
-| Shadows                | optional         | Enabled only on `quality=high`                                                                     |
-| Prefers-reduced-motion | respected        | Intro/fly-through jump cuts                                                                        |
+| Shadows                | optional         | Disabled on Canvas (`shadows={false}`); quality probe still gates DPR/bloom                        |
+| Prefers-reduced-motion | respected        | Landing uses `motion-safe:` animations; FPP/Follow/Intro snap; CSS zeros transitions               |
 
-## Lighthouse (desktop, local preview)
+## Accessibility pass (Phase 7)
 
-| Metric      | Target | Result                                                                                     |
-| ----------- | ------ | ------------------------------------------------------------------------------------------ |
-| Performance | ≥ 85   | Not run in headless CI (no Chrome lighthouse job yet). Manual check recommended on deploy. |
-| CLS         | low    | Static shell + reserved 420px scene height reduces shift                                   |
-
-## Accessibility pass (Phase 9)
-
+- Skip link → `#main`; primary nav `aria-label`
 - Visible `:focus-visible` outlines retained
-- `aria-live` on loading stage copy
-- Language select and panel buttons are keyboard reachable
-- Contrast: light text on near-black/moss surfaces (AA intended for body copy)
+- `aria-live` on generate stages (sr-only) + SearchPanel stage + Toast `role="alert"`
+- EmptyCanvas `role="status"`; Scene Suspense fallback polite
+- KeyboardNav: ArrowLeft/Right + Escape only — **Tab not hijacked** (forms keep focus order)
+- Mobile sheet: safe-area padding, `100dvh` height, dialog label + toolbar
+- Contrast: fog text on near-black/moss surfaces (AA intended for body copy); teal replaces leftover cyan classes
 
 ## How to re-measure
 
