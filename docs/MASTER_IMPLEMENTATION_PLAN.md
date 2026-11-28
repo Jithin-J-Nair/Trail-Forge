@@ -134,11 +134,15 @@
 
 ## Phase 5 — Solar / weather
 
+**Track:** TF-39  
+**Branch:** `cursor/recon-phase-5-environment-9c79`
+
 ### Deliverables
 
 - Solar elevation → dayFactor lighting (adopt #17 `solar.ts` / `DayNightLights` if not merged).
 - Optional weather: real API adapter **or** explicit “weather unavailable” — never fake rain/snow silently.
 - Building window `uDay` (or equivalent) tied to solar factor.
+- Polish: longitude civil-time offset + sun elevation HUD; Open-Meteo opt-in with no-key unavailable default.
 
 ### Success checks
 

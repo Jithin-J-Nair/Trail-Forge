@@ -5,6 +5,8 @@ export type SolarState = {
   elevationDeg: number;
   /** 0 night → 1 full day. */
   dayFactor: number;
+  /** Longitude-based civil UTC offset in hours (nearest hour; not IANA TZ). */
+  utcOffsetHours: number;
   /** Local civil clock string using longitude-based UTC offset. */
   localTimeLabel: string;
   isDay: boolean;
@@ -13,6 +15,11 @@ export type SolarState = {
 function dayOfYear(d: Date): number {
   const start = Date.UTC(d.getUTCFullYear(), 0, 0);
   return Math.floor((d.getTime() - start) / 86_400_000);
+}
+
+/** Nearest whole-hour offset from longitude (honest approx — not IANA timezone). */
+export function longitudeUtcOffsetHours(lon: number): number {
+  return Math.round(lon / 15);
 }
 
 /** Compact solar altitude from lat/lon + UTC (no external tz DB). */
@@ -36,21 +43,23 @@ export function dayFactorFromElevation(elevationDeg: number): number {
 }
 
 export function localTimeFromLongitude(lon: number, now = new Date()): string {
-  const offsetMin = Math.round(lon / 15) * 60;
-  const local = new Date(now.getTime() + offsetMin * 60_000);
+  const offsetH = longitudeUtcOffsetHours(lon);
+  const local = new Date(now.getTime() + offsetH * 3_600_000);
   const hh = String(local.getUTCHours()).padStart(2, '0');
   const mm = String(local.getUTCMinutes()).padStart(2, '0');
-  const sign = offsetMin >= 0 ? '+' : '-';
-  const oh = String(Math.floor(Math.abs(offsetMin) / 60)).padStart(2, '0');
+  const sign = offsetH >= 0 ? '+' : '-';
+  const oh = String(Math.abs(offsetH)).padStart(2, '0');
   return `${hh}:${mm} (UTC${sign}${oh})`;
 }
 
 export function getSolarState(lat: number, lon: number, now = new Date()): SolarState {
   const elevationDeg = solarElevationDeg(lat, lon, now);
   const dayFactor = dayFactorFromElevation(elevationDeg);
+  const utcOffsetHours = longitudeUtcOffsetHours(lon);
   return {
     elevationDeg,
     dayFactor,
+    utcOffsetHours,
     localTimeLabel: localTimeFromLongitude(lon, now),
     isDay: elevationDeg > 0,
   };

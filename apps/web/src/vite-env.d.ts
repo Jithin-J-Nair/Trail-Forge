@@ -7,6 +7,8 @@ interface ImportMetaEnv {
   readonly VITE_MAPTILER_KEY?: string;
   /** Optional Cesium ion token — prefer server proxy; unused until tiles adapter ships. */
   readonly VITE_CESIUM_ION_TOKEN?: string;
+  /** Optional weather provider: `openmeteo` (keyless) or unset = unavailable. */
+  readonly VITE_WEATHER_PROVIDER?: string;
 }
 
 interface ImportMeta {
