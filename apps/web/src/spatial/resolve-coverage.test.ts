@@ -18,7 +18,7 @@ describe('resolveSpatialLayer', () => {
     expect(status.coverage).toBe('none');
   });
 
-  it('never claims photoreal full when tiles adapter is absent', () => {
+  it('never claims photoreal full when tiles adapter has not loaded', () => {
     const status = resolveSpatialLayer({
       cesiumIonToken: 'ion-test',
       forceCoverage: 'full',
@@ -32,5 +32,18 @@ describe('resolveSpatialLayer', () => {
     const status = resolveSpatialLayer({ maptilerKey: 'pk.test' });
     expect(status.mode).toBe('extrusions');
     expect(status.coverage).toBe('partial');
+  });
+
+  it('reports partial while Google tiles session is loading', () => {
+    const status = resolveSpatialLayer({ googleTiles: 'loading' });
+    expect(status.mode).toBe('extrusions');
+    expect(status.coverage).toBe('partial');
+  });
+
+  it('reports full only after Google tiles have loaded', () => {
+    const status = resolveSpatialLayer({ googleTiles: 'loaded' });
+    expect(status.mode).toBe('tiles');
+    expect(status.coverage).toBe('full');
+    expect(status.label).toMatch(/Google Photorealistic/i);
   });
 });

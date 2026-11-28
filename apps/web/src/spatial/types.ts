@@ -18,6 +18,11 @@ export type SpatialEnv = {
   maptilerKey?: string;
   /** Cesium ion token. Prefer server proxy; empty = unset. */
   cesiumIonToken?: string;
+  /**
+   * Server-side Google Photorealistic 3D Tiles session state.
+   * `full` coverage is only applied after tiles actually load (see useGoogleTiles).
+   */
+  googleTiles?: 'unset' | 'available' | 'loading' | 'loaded' | 'failed';
   /** Force mock coverage in tests. */
   forceCoverage?: SpatialCoverage;
 };

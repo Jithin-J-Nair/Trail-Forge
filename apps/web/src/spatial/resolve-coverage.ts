@@ -4,17 +4,23 @@ import type { SpatialEnv, SpatialLayerStatus } from './types.js';
  * Resolve which spatial layer to use.
  * Without provider keys (or without a wired adapter), always fall back to OSM
  * footprint extrusions and report coverage honestly — never fake photoreal.
+ * `full` is reserved for Google tiles that have actually loaded in the scene.
  */
 export function resolveSpatialLayer(env: SpatialEnv = {}): SpatialLayerStatus {
   if (env.forceCoverage === 'none') {
     return extrusionStatus('forced none for tests');
   }
 
-  const hasMaptiler = Boolean(env.maptilerKey?.trim());
-  const hasCesium = Boolean(env.cesiumIonToken?.trim());
+  const google = env.googleTiles ?? 'unset';
+  if (google === 'loaded') {
+    return {
+      mode: 'tiles',
+      coverage: 'full',
+      label: 'Google Photorealistic 3D Tiles',
+      reason: 'proxied Google Map Tiles session loaded tiles in scene',
+    };
+  }
 
-  // Phase 3: adapters are declared but not rendering tiles/terrain yet.
-  // Keys alone must not flip the scene to a dishonest "full coverage" claim.
   if (env.forceCoverage === 'partial') {
     return {
       mode: 'extrusions',
@@ -25,21 +31,41 @@ export function resolveSpatialLayer(env: SpatialEnv = {}): SpatialLayerStatus {
   }
 
   if (env.forceCoverage === 'full') {
-    // Still extrusions until a real tiles adapter ships; label stays honest.
+    // Still extrusions until tiles actually load; label stays honest.
     return {
       mode: 'extrusions',
       coverage: 'partial',
       label: 'OSM extrusions · photoreal not wired',
-      reason: 'full coverage requested but tiles adapter not implemented',
+      reason: 'full coverage requested but tiles not loaded',
     };
   }
 
-  if (!hasMaptiler && !hasCesium) {
-    return extrusionStatus('no MapTiler/Cesium keys — OSM extrusions only');
+  if (google === 'available' || google === 'loading') {
+    return {
+      mode: 'extrusions',
+      coverage: 'partial',
+      label: 'OSM extrusions · photoreal loading',
+      reason: 'Google tiles session available — awaiting tile load',
+    };
   }
 
-  // Keys present but tile/terrain renderers not shipped: stay on extrusions,
-  // advertise partial so the UI can show an honest upgrade path.
+  if (google === 'failed') {
+    return {
+      mode: 'extrusions',
+      coverage: 'partial',
+      label: 'OSM extrusions · photoreal failed',
+      reason: 'Google tiles session or load failed — footprints only',
+    };
+  }
+
+  const hasMaptiler = Boolean(env.maptilerKey?.trim());
+  const hasCesium = Boolean(env.cesiumIonToken?.trim());
+
+  if (!hasMaptiler && !hasCesium) {
+    return extrusionStatus('no MapTiler/Cesium/Google tiles — OSM extrusions only');
+  }
+
+  // Keys present but tile/terrain renderers not active: stay on extrusions.
   return {
     mode: 'extrusions',
     coverage: 'partial',
@@ -59,7 +85,7 @@ function extrusionStatus(reason: string): SpatialLayerStatus {
   };
 }
 
-/** Read Vite env for browser resolve (no secrets required for default path). */
+/** Read Vite env for browser resolve (no Google secret — that stays on the API). */
 export function spatialEnvFromImportMeta(): SpatialEnv {
   const env: SpatialEnv = {};
   const maptilerKey = import.meta.env.VITE_MAPTILER_KEY;

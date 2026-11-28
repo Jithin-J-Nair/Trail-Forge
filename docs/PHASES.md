@@ -216,3 +216,11 @@
 3. README launch path + honest limitations; DEPLOY checklist with placeholder demo URL (not claimed live); ENGINEERING_REPORT scorecard.
 4. PRODUCT_AUDIT §11 updated with Phase 0 vs Phase 9 scores; no invented deploy URL or photoreal coverage.
 5. Interview line: “Phase 9 is ops honesty—secrets documented, auth fail-fast, and a scorecard that admits what we did not ship.”
+
+## Google Photorealistic 3D Tiles summary
+
+1. API reads `GOOGLE_MAPS_API_KEY` only; `GET /api/spatial/google-tiles-session` mints a proxied root URL or 503 when unset; tile proxy never logs the key.
+2. Web probes the session and loads Photorealistic 3D Tiles with `3d-tiles-renderer` in R3F; OSM extrusions remain until tiles actually load.
+3. `CoverageBadge` / `resolveSpatialLayer` claim `full` only after a successful tileset load — never from keys alone.
+4. `.env.example` + `docs/SPATIAL.md` document the server key and createSession-vs-root.json note; local/dev without a key still runs.
+5. Interview line: “Photoreal is key-gated and proxy-honest—extrusions by default, Google tiles only when the session loads for real.”

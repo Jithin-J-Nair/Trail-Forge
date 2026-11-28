@@ -3,7 +3,7 @@ import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import type { GenerateResponse } from '@trailforge/shared';
 import type { WebGLRenderer } from 'three';
-import { CoverageBadge, resolveSpatialLayer, spatialEnvFromImportMeta } from '../spatial/index.js';
+import { CoverageBadge, GooglePhotorealTiles, useGoogleTiles } from '../spatial/index.js';
 import { useWeather, WeatherBadge } from '../weather/index.js';
 import { Buildings } from './Buildings.js';
 import type { CameraMode } from './camera-mode.js';
@@ -57,8 +57,9 @@ export function Scene({
   const [isDay, setIsDay] = useState(initialSolar.isDay);
   const [dayFactor, setDayFactor] = useState(initialSolar.dayFactor);
   const [sunElev, setSunElev] = useState(initialSolar.elevationDeg);
-  const spatial = useMemo(() => resolveSpatialLayer(spatialEnvFromImportMeta()), []);
+  const googleTiles = useGoogleTiles();
   const weather = useWeather(data.center.lat, data.center.lon);
+  const showExtrusions = !googleTiles.tilesActive;
 
   const onSolar = useCallback((label: string, day: boolean, factor: number, elev: number) => {
     setTimeLabel(label);
@@ -85,8 +86,19 @@ export function Scene({
         <Suspense fallback={null}>
           <DayNightLights lat={data.center.lat} lon={data.center.lon} onSolar={onSolar} />
           <IntroCamera enabled={cameraMode === 'aerial'} />
+          {googleTiles.rootUrl ? (
+            <GooglePhotorealTiles
+              rootUrl={googleTiles.rootUrl}
+              lat={data.center.lat}
+              lon={data.center.lon}
+              onLoad={googleTiles.onTilesLoad}
+              onError={googleTiles.onTilesError}
+            />
+          ) : null}
           <Roads roads={data.scene.roads} />
-          <Buildings buildings={data.scene.buildings} dayFactor={dayFactor} />
+          {showExtrusions ? (
+            <Buildings buildings={data.scene.buildings} dayFactor={dayFactor} />
+          ) : null}
           <RouteLine pois={data.pois} orderedPoiIds={data.route.orderedPoiIds} />
           <Pins pois={data.pois} content={data.content} />
           {cameraMode === 'aerial' ? <SelectFlyTo pois={data.pois} /> : null}
@@ -123,7 +135,7 @@ export function Scene({
         Local {timeLabel} · {isDay ? 'Day' : 'Night'} · sun {Math.round(sunElev)}°
       </p>
       <WeatherBadge status={weather} />
-      <CoverageBadge status={spatial} />
+      <CoverageBadge status={googleTiles.status} />
       <DebugStats enabled={debug} gl={gl} />
     </div>
   );

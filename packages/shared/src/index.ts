@@ -57,3 +57,11 @@ export {
   type GenerateResponse,
 } from './schemas/generate-response.js';
 export { lonLatToLocalMeters, localMetersToLonLat } from './geo/projection.js';
+export {
+  GoogleTilesSessionAvailableSchema,
+  GoogleTilesSessionUnavailableSchema,
+  GoogleTilesSessionResponseSchema,
+  type GoogleTilesSessionAvailable,
+  type GoogleTilesSessionUnavailable,
+  type GoogleTilesSessionResponse,
+} from './schemas/google-tiles-session.js';

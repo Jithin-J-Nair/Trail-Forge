@@ -22,6 +22,7 @@ import { createProfileRouter } from './profile/routes.js';
 import { createAnalyticsRouter } from './analytics/routes.js';
 import { getGeoHealth } from './geo/index.js';
 import { dbHealthcheck } from './db/pool.js';
+import { createSpatialRouter } from './spatial/routes.js';
 
 export type CreateAppOptions = {
   llm?: LlmProvider;
@@ -63,12 +64,16 @@ export function createApp(options: CreateAppOptions = {}) {
       limit: 60,
       standardHeaders: true,
       legacyHeaders: false,
+      // Tile fan-out exceeds the general API budget; Google enforces its own quotas.
+      skip: (req) => req.path.startsWith('/api/spatial/google-tiles/'),
     }),
   );
 
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
+
+  app.use('/api/spatial', createSpatialRouter());
 
   app.get('/api/geo/health', (_req, res) => {
     res.json(getGeoHealth());

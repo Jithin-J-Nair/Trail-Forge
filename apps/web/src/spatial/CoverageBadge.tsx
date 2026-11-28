@@ -7,7 +7,7 @@ export function CoverageBadge({ status }: { status: SpatialLayerStatus }) {
       ? 'No terrain/tiles keys — footprints only'
       : status.coverage === 'partial'
         ? 'Enhanced layers not active — footprints only'
-        : 'Coverage reported full';
+        : 'Photoreal tiles loaded · © Google';
 
   return (
     <p
