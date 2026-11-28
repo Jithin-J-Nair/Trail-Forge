@@ -13,6 +13,7 @@
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint . --fix && prettier --write .",
     "test": "npm run test --workspaces --if-present",
+    "test:e2e": "playwright test",
     "eval": "tsx scripts/eval.ts",
     "smoke:live": "tsx scripts/smoke-live.ts",
     "dev:web": "npm run dev -w @trailforge/web",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "@playwright/test": "^1.51.0",
     "@types/node": "^22.13.10",
     "concurrently": "^9.1.2",
     "eslint": "^9.22.0",

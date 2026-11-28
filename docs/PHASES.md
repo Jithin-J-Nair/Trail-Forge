@@ -200,3 +200,11 @@
 3. Empty/loading/error: EmptyCanvas status, Suspense + stage `aria-live`, Toast alert; mobile sheet safe-area + dialog label.
 4. Replaced leftover cyan HUD classes with teal; PERFORMANCE.md a11y/runtime notes refreshed.
 5. Interview line: “Phase 7 is quiet polish—keyboard that respects forms, motion that respects preference, and honest empty states.”
+
+## Reconstruction Phase 8 summary — QA + security
+
+1. Expanded Mock eval (6 areas) asserting RoutePlan.scoring + routing provider; EVAL.md regenerated.
+2. Security tests: Helmet headers, CORS allow/deny, global 60/min limit, keys never in health/generate JSON; client VITE secret scan.
+3. Demo gate smoke: empty `/app` vs `?demo=1` labeled DEMO; itineraries remain 401 without auth.
+4. Optional Playwright landing→app→demo (`npm run test:e2e`); FPP walk skipped (headless WebGL).
+5. Interview line: “Phase 8 proves the trust surface—rate limits, CORS, and demo honesty—with CI-safe Mock eval.”

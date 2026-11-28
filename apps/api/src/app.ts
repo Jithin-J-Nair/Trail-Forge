@@ -37,7 +37,18 @@ export function createApp(options: CreateAppOptions = {}) {
 
   app.set('cache', responseCache);
   app.use(helmet());
-  app.use(cors({ origin: corsOrigin }));
+  app.use(
+    cors({
+      origin(origin, callback) {
+        // Reflect only the configured origin — never echo arbitrary Origin headers.
+        if (!origin || origin === corsOrigin) {
+          callback(null, corsOrigin);
+          return;
+        }
+        callback(null, false);
+      },
+    }),
+  );
   app.use(express.json({ limit: '32kb' }));
   app.use(requestIdMiddleware);
   app.use(

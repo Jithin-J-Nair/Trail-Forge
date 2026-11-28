@@ -21,6 +21,11 @@ const AREAS = [
     theme: 'food' as const,
     center: { lon: 127.695, lat: 26.217 },
   },
+  {
+    query: 'Dotonbori, Osaka',
+    theme: 'food' as const,
+    center: { lon: 135.501, lat: 34.668 },
+  },
 ];
 
 const fixture = JSON.parse(
@@ -36,8 +41,8 @@ const fixture = JSON.parse(
 async function main() {
   const llm = new MockAiProvider();
   const rows: string[] = [
-    '| Area | POIs | verified % | needs_review % | rejected | hallucinated places | time ms |',
-    '| --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+    '| Area | POIs | verified % | needs_review % | rejected | hallucinated places | routing | stops | time ms |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |',
   ];
 
   for (const area of AREAS) {
@@ -64,8 +69,13 @@ async function main() {
     const verifiedPct = Math.round((response.verification.verified / total) * 100);
     const reviewPct = Math.round((response.verification.needsReview / total) * 100);
     const hallucinated = response.verification.rejected;
+    const routing = response.route.routing?.provider ?? 'n/a';
+    const stops = response.route.orderedPoiIds.length;
+    if (!response.route.scoring) {
+      throw new Error(`missing RoutePlan.scoring for ${area.query}`);
+    }
     rows.push(
-      `| ${area.query} | ${response.pois.length} | ${verifiedPct}% | ${reviewPct}% | ${response.verification.rejected} | ${hallucinated} | ${ms} |`,
+      `| ${area.query} | ${response.pois.length} | ${verifiedPct}% | ${reviewPct}% | ${response.verification.rejected} | ${hallucinated} | ${routing} | ${stops} | ${ms} |`,
     );
   }
 
