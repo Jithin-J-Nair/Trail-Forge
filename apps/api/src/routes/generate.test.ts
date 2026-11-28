@@ -57,6 +57,9 @@ describe('POST /api/generate', () => {
     expect(() => GenerateResponseSchema.parse(res.body)).not.toThrow();
     expect(res.body.pois.length).toBeGreaterThan(0);
     expect(res.headers['x-request-id']).toBeTruthy();
+    expect(res.body.route.scoring?.candidateCount).toBeGreaterThan(0);
+    expect(res.body.route.routing?.provider).toBeTruthy();
+    expect(JSON.stringify(res.body)).not.toMatch(/ANTHROPIC|OPENROUTESERVICE_API_KEY|sk-/i);
   });
 
   it('rejects invalid input', async () => {

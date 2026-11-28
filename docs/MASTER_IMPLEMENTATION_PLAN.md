@@ -192,11 +192,15 @@
 
 ## Phase 8 — QA
 
+**Track:** TF-42  
+**Branch:** `cursor/recon-phase-8-qa-9c79`
+
 ### Deliverables
 
 - Expand Mock eval scenarios; keep `docs/EVAL.md` generator.
 - Integration tests for demo gate, generate errors, auth-optional save.
 - Optional Playwright smoke (landing → app → demo) if CI time allows — skip if flaky headless WebGL.
+- Security pass: Helmet, CORS origin, rate limits, no secret keys in browser/API JSON (`docs/SECURITY.md`).
 
 ### Success checks
 
