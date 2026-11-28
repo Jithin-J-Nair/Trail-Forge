@@ -2,17 +2,32 @@
 
 TrailForge turns an area + theme + duration into a grounded walking tour: real OpenStreetMap places, a dusk 3D city preview, and Japanese/English blurbs that may only cite OSM tags. Claims are verified in code before they reach export.
 
-![Screenshot placeholder](docs/media/screenshot-placeholder.svg)
+© OpenStreetMap contributors (ODbL). App code is MIT (`LICENSE`).
 
-## Quick start
+## Launch (local)
 
 ```bash
 npm ci
 cp apps/api/.env.example apps/api/.env
+# optional UI flags: cp apps/web/.env.example apps/web/.env
 npm run dev
 ```
 
-Open http://localhost:5173 — Vite proxies `/api` to the API on port 3001.
+| Surface    | URL                                              |
+| ---------- | ------------------------------------------------ |
+| Web (Vite) | http://localhost:5173                            |
+| API        | http://localhost:3001 (`/api` proxied from Vite) |
+| Health     | http://localhost:3001/api/health                 |
+| Ready      | http://localhost:3001/api/ready                  |
+
+Default `LLM_PROVIDER=mock` — no Anthropic key required for CI or first run.
+
+### Demo / fixtures (always labeled)
+
+- UI: `http://localhost:5173/app?demo=1` or `VITE_DEMO_MODE=true` → **DEMO DATA** badge
+- API: `LOCAL_DEV_DATA_SOURCE=true` → **DEV MODE** fixtures (not live OSM)
+
+Never silent SAMPLE cities on the production path.
 
 ## Architecture
 
@@ -27,7 +42,7 @@ flowchart LR
   Route --> Web
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the threat model and grounding rules.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/SECURITY.md](docs/SECURITY.md).
 
 ## Workspaces
 
@@ -44,36 +59,45 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
-npm run eval          # MockProvider fixture eval → docs/EVAL.md
+npm run eval          # MockProvider → docs/EVAL.md
+npm run test:e2e      # optional Playwright smoke (install chromium first)
 ```
 
 ## Env
 
-See `apps/api/.env.example`. LLM keys never go to the browser. Default `LLM_PROVIDER=mock`.
+| File                    | Purpose                                       |
+| ----------------------- | --------------------------------------------- |
+| `apps/api/.env.example` | API secrets + LLM + routing + optional DB/JWT |
+| `apps/web/.env.example` | Publishable `VITE_*` only                     |
+| `.env.example`          | Root mirror of API vars for operators         |
 
-- `?demo=1` or `VITE_DEMO_MODE=true` — UI fixture with a **DEMO DATA** badge (never silent).
-- `LOCAL_DEV_DATA_SOURCE=true` — API returns labeled local fixtures (**DEV MODE**), not live OSM.
+LLM and ORS/GraphHopper keys stay server-side. If `DATABASE_URL` is set, boot requires `JWT_SECRET` (≥16 chars).
 
 ## Docs
 
-| Doc                                          | Purpose                            |
-| -------------------------------------------- | ---------------------------------- |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Data flow, grounding, threat model |
-| [docs/PHASES.md](docs/PHASES.md)             | What each phase shipped            |
-| [docs/PERFORMANCE.md](docs/PERFORMANCE.md)   | 3D budgets                         |
-| [docs/DEPLOY.md](docs/DEPLOY.md)             | Docker / deploy                    |
-| [docs/EVAL.md](docs/EVAL.md)                 | Mock eval output                   |
-
-## Data & licenses
-
-Map data © OpenStreetMap contributors (ODbL). See `NOTICE`. App code is MIT (`LICENSE`).
+| Doc                                                      | Purpose                                        |
+| -------------------------------------------------------- | ---------------------------------------------- |
+| [docs/ENGINEERING_REPORT.md](docs/ENGINEERING_REPORT.md) | Final reconstruction report + honest scorecard |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)             | Data flow, grounding, threat model             |
+| [docs/PHASES.md](docs/PHASES.md)                         | What each phase shipped                        |
+| [docs/SPATIAL.md](docs/SPATIAL.md)                       | Coverage adapters (extrusions default)         |
+| [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)               | Solar + weather honesty                        |
+| [docs/ROUTING.md](docs/ROUTING.md)                       | Multi-objective route + pedestrian meters      |
+| [docs/PERFORMANCE.md](docs/PERFORMANCE.md)               | 3D / a11y budgets                              |
+| [docs/SECURITY.md](docs/SECURITY.md)                     | Keys, CORS, rate limits                        |
+| [docs/DEPLOY.md](docs/DEPLOY.md)                         | Deploy checklist                               |
+| [docs/EVAL.md](docs/EVAL.md)                             | Mock eval output                               |
 
 ## Limitations (honest)
 
-- Nominatim/Overpass may rate-limit or block some cloud IPs; use DEMO_MODE or LOCAL_DEV for offline UI — both are labeled.
-- Mock LLM is deterministic for CI; Claude/Ollama need keys/hosts.
-- 3D scene uses merged meshes but is not a full city twin; building caps apply.
+- **Not a city twin.** 3D is merged OSM footprint extrusions (≤ ~2k buildings budget), not Google/Cesium photoreal. MapTiler/Cesium keys alone do not enable tiles — adapters are coverage-aware and fall back to extrusions (`docs/SPATIAL.md`).
+- **OSM egress.** Nominatim/Overpass may rate-limit or block some cloud IPs; use labeled DEMO / LOCAL_DEV — never invent places.
+- **LLM.** Default Mock is for CI/determinism; Claude/Ollama need keys/hosts. Grounding still rejects uncited claims.
+- **Weather.** Off until `VITE_WEATHER_PROVIDER=openmeteo`; failures stay “unavailable,” never fake rain.
+- **Pedestrian distance.** ORS/GraphHopper when keyed; otherwise labeled euclidean×1.3.
+- **Auth / save.** Optional Postgres; without DB, generate still works; save requires sign-in.
+- **Deploy URL.** No production demo URL is claimed in this repo — see placeholder in `docs/DEPLOY.md`.
 
 ## Deploy
 
-[docs/DEPLOY.md](docs/DEPLOY.md) · Docker: `docker compose up --build api`
+[docs/DEPLOY.md](docs/DEPLOY.md) · `docker compose up --build api`

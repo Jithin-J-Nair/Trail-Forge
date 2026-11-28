@@ -189,6 +189,8 @@ See `docs/AGENT_SKILLS.md` for the living install log.
 
 ## 11. Honest scorecard
 
+### Phase 0 baseline (2026-11-28 pre-reconstruction)
+
 | Dimension                        | Score (1–5) | Note                                                    |
 | -------------------------------- | ----------- | ------------------------------------------------------- |
 | Trust / grounding                | 4           | Strong schemas + grounding; DEMO leak on main until #16 |
@@ -198,4 +200,17 @@ See `docs/AGENT_SKILLS.md` for the living install log.
 | Spatial coverage (tiles/terrain) | 1           | Not started; adapters planned                           |
 | Prod readiness                   | 3           | CI/Docker/docs; secrets/DB optional                     |
 
-**Bottom line:** Keep the working generate→3D core. Merge honesty + cinematic PRs (#16/#17). Skills (#19) are on main. Rebuild identity in Phase 1 without a stack rewrite. Photoreal tiles stay key-gated and fallback-honest.
+### Reconstruction close (Phase 9 — see `docs/ENGINEERING_REPORT.md`)
+
+| Dimension                        | Score (1–5) | Note                                                               |
+| -------------------------------- | ----------- | ------------------------------------------------------------------ |
+| Trust / grounding                | 5           | DEMO opt-in; grounding + security tests; Mock eval asserts scoring |
+| Live OSM path                    | 4           | Unchanged: solid path; egress 403/504 still possible               |
+| 3D product feel                  | 4           | Aerial / Follow / FPP + solar; still footprint extrusions          |
+| Design / brand                   | 4           | Brand-first landing; cartographic dusk tokens                      |
+| Spatial coverage (tiles/terrain) | 2           | Coverage adapters + badge; no photoreal without keys/adapters      |
+| Prod readiness                   | 4           | Deploy/SECURITY docs; JWT fail-fast; no invented live demo URL     |
+
+**Bottom line (Phase 0):** Keep the working generate→3D core. Merge honesty + cinematic PRs (#16/#17). Skills (#19) are on main. Rebuild identity in Phase 1 without a stack rewrite. Photoreal tiles stay key-gated and fallback-honest.
+
+**Bottom line (Phase 9):** Reconstruction complete. Honest demos with Mock + labeled fixtures are production-ready; photoreal twin / keyless Claude / silent SAMPLE are explicitly out of scope.

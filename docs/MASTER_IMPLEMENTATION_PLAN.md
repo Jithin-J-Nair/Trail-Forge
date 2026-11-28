@@ -210,12 +210,15 @@
 
 ## Phase 9 — Production readiness
 
+**Track:** TF-43  
+**Branch:** `cursor/recon-phase-9-prod-9c79`
+
 ### Deliverables
 
-- Deploy docs refresh; secret checklist; `/api/ready` semantics.
-- Fail-fast when auth enabled without `JWT_SECRET` / `DATABASE_URL`.
-- Final honest limitations section in README (tiles keys, OSM egress, Mock default).
-- Scorecard update in audit or PHASES.
+- [x] Deploy docs refresh; secret checklist; `/api/ready` semantics documented.
+- [x] Fail-fast when `DATABASE_URL` set without `JWT_SECRET` (`assertAuthEnv`).
+- [x] Final honest limitations section in README (tiles keys, OSM egress, Mock default).
+- [x] Scorecard update in PRODUCT_AUDIT + `docs/ENGINEERING_REPORT.md`.
 
 ### Success checks
 
