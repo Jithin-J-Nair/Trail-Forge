@@ -23,33 +23,53 @@ import { createAnalyticsRouter } from './analytics/routes.js';
 import { getGeoHealth } from './geo/index.js';
 import { dbHealthcheck } from './db/pool.js';
 import { createSpatialRouter } from './spatial/routes.js';
+import {
+  isSameOriginRequest,
+  mountWebStatic,
+  resolveWebDist,
+  shouldServeWeb,
+} from './static-web.js';
 
 export type CreateAppOptions = {
   llm?: LlmProvider;
   ai?: LlmJsonProvider;
   corsOrigin?: string;
   generateDeps?: GenerateDeps;
+  /** Force on/off static SPA serving (tests). Default: env / production + dist. */
+  serveWeb?: boolean;
+  webDist?: string;
 };
 
 export function createApp(options: CreateAppOptions = {}) {
   const app = express();
   const llm = options.llm ?? createLlmProvider('mock');
   const corsOrigin = options.corsOrigin ?? process.env['CORS_ORIGIN'] ?? 'http://localhost:5173';
+  const webDist = options.webDist ?? resolveWebDist();
+  const serveWeb = shouldServeWeb({
+    ...(options.serveWeb !== undefined ? { serveWeb: options.serveWeb } : {}),
+    webDist,
+  });
 
   app.set('cache', responseCache);
-  app.use(helmet());
-  app.use(
+  // CSP defaults break Vite + Google Fonts/tiles when the API also hosts the SPA.
+  app.use(serveWeb ? helmet({ contentSecurityPolicy: false }) : helmet());
+  app.use((req, res, next) => {
     cors({
       origin(origin, callback) {
-        // Reflect only the configured origin — never echo arbitrary Origin headers.
+        // Reflect only allow-listed origins — never echo arbitrary Origin headers.
         if (!origin || origin === corsOrigin) {
           callback(null, corsOrigin);
           return;
         }
+        // Same-origin SPA (API serves web): browser Origin matches Host.
+        if (serveWeb && isSameOriginRequest(origin, req)) {
+          callback(null, origin);
+          return;
+        }
         callback(null, false);
       },
-    }),
-  );
+    })(req, res, next);
+  });
   app.use(express.json({ limit: '32kb' }));
   app.use(requestIdMiddleware);
   app.use(
@@ -64,8 +84,13 @@ export function createApp(options: CreateAppOptions = {}) {
       limit: 60,
       standardHeaders: true,
       legacyHeaders: false,
-      // Tile fan-out exceeds the general API budget; Google enforces its own quotas.
-      skip: (req) => req.path.startsWith('/api/spatial/google-tiles/'),
+      skip: (req) => {
+        // Tile fan-out exceeds the general API budget; Google enforces its own quotas.
+        if (req.path.startsWith('/api/spatial/google-tiles/')) return true;
+        // Static assets must not burn the API budget.
+        if (serveWeb && !req.path.startsWith('/api')) return true;
+        return false;
+      },
     }),
   );
 
@@ -135,6 +160,10 @@ export function createApp(options: CreateAppOptions = {}) {
       res.status(502).json({ error: 'llm_error', message });
     }
   });
+
+  if (serveWeb) {
+    mountWebStatic(app, webDist);
+  }
 
   return app;
 }
