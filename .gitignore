@@ -11,3 +11,7 @@ apps/api/.cache/
 .turbo/
 .vite/
 *.tsbuildinfo
+
+# Python bytecode from skill scripts
+**/__pycache__/
+*.py[cod]
