@@ -27,12 +27,12 @@ function supportsWebGL(): boolean {
 function Lights() {
   return (
     <>
-      <color attach="background" args={['#05070D']} />
-      <fog attach="fog" args={['#05070D', 90, 380]} />
-      <hemisphereLight args={['#1a2744', '#05070D', 0.45]} />
-      <directionalLight position={[40, 100, 20]} intensity={0.35} color="#8B7BFF" />
-      <pointLight position={[-50, 35, -30]} intensity={0.9} color="#4FE3FF" distance={220} />
-      <pointLight position={[60, 28, 50]} intensity={0.55} color="#8B7BFF" distance={200} />
+      <color attach="background" args={['#07090F']} />
+      <fog attach="fog" args={['#07090F', 100, 400]} />
+      <hemisphereLight args={['#2a3348', '#07090F', 0.55]} />
+      <directionalLight position={[40, 100, 20]} intensity={0.5} color="#c8d0e0" />
+      <pointLight position={[-50, 35, -30]} intensity={0.35} color="#9eb0c8" distance={220} />
+      <pointLight position={[60, 28, 50]} intensity={0.25} color="#b8a890" distance={200} />
     </>
   );
 }
@@ -88,9 +88,9 @@ export function Scene({
           {quality !== 'low' && !reduceMotion ? (
             <EffectComposer multisampling={0}>
               <Bloom
-                intensity={0.85}
-                luminanceThreshold={0.55}
-                luminanceSmoothing={0.3}
+                intensity={0.28}
+                luminanceThreshold={0.72}
+                luminanceSmoothing={0.4}
                 mipmapBlur
               />
             </EffectComposer>

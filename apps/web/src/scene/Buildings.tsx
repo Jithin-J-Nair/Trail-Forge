@@ -37,21 +37,22 @@ const fragmentShader = /* glsl */ `
 
   void main() {
     float t = clamp(vHeight / 45.0, 0.0, 1.0);
-    vec3 base = mix(vec3(0.05, 0.08, 0.16), vec3(0.12, 0.16, 0.28), t);
+    // Soft dusk facade — keep atmosphere without neon-sign intensity.
+    vec3 base = mix(vec3(0.06, 0.07, 0.12), vec3(0.14, 0.15, 0.22), t);
     float up = abs(vNormalW.y);
     float side = 1.0 - smoothstep(0.55, 0.95, up);
 
     vec2 grid = floor(vWorldPos.xz * 0.55);
     float floorY = floor(vWorldPos.y * 0.42);
-    float lit = step(0.62, hash(grid + floorY));
-    float flicker = 0.85 + 0.15 * sin(uTime * (1.2 + hash(grid) * 2.0) + hash(grid) * 6.0);
-    vec3 windowCol = vec3(0.31, 0.89, 1.0) * lit * side * flicker * 1.35;
-    vec3 violet = vec3(0.55, 0.48, 1.0) * lit * side * 0.35;
+    float lit = step(0.72, hash(grid + floorY));
+    float flicker = 0.92 + 0.08 * sin(uTime * (0.6 + hash(grid) * 1.2) + hash(grid) * 4.0);
+    vec3 windowCol = vec3(0.55, 0.62, 0.78) * lit * side * flicker * 0.55;
+    vec3 warm = vec3(0.42, 0.36, 0.28) * lit * side * 0.18;
 
-    vec3 color = base + windowCol + violet;
-    float emissive = length(windowCol) * 0.9;
+    vec3 color = base + windowCol + warm;
+    float emissive = length(windowCol) * 0.35;
     gl_FragColor = vec4(color, 1.0);
-    gl_FragColor.rgb += vec3(emissive * 0.15);
+    gl_FragColor.rgb += vec3(emissive * 0.06);
   }
 `;
 

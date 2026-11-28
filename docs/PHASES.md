@@ -136,3 +136,11 @@
 3. Entrance + map-drift + pin-glow motions with `prefers-reduced-motion` already gated in CSS; nav uses amber active state (not neon pills).
 4. Glass HUD classes remapped to new tokens so `/app` generate → R3F path is unchanged.
 5. Interview line: “Phase 1 gives TrailForge a cartographic dusk identity—the brand leads the first viewport before you open the live city HUD.”
+
+## Scene mix polish
+
+1. `/app` no longer auto-paints SAMPLE city; fixture only under explicit DEMO (`?demo=1` / `VITE_DEMO_MODE`) or offline fallback (still badged).
+2. Building window shader + bloom/lights toned down: dusk atmosphere without cyan/violet neon blast.
+3. Live Generate still uses the same dusk HUD — just quieter materials over real OSM footprints.
+4. Assumption: empty scene until Generate is preferable to a fake dense city that reads as “the product.”
+5. Interview line: “Demo is opt-in; the 3D look stays dusk, not a nightclub.”
