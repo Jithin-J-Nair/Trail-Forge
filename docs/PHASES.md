@@ -184,3 +184,11 @@
 3. Failures stay “Weather unavailable” — never invent rain/snow particles or silent SAMPLE weather.
 4. `docs/ENVIRONMENT.md` records solar honesty + weather opt-in; building `uDay` still follows solar dayFactor.
 5. Interview line: “Phase 5 is environment honesty—longitude solar lighting plus weather that stays off until a real provider answers.”
+
+## Reconstruction Phase 6 summary — route intelligence
+
+1. Multi-objective ranking (proximity · theme · walkability · duration) with transparent `RoutePlan.scoring`.
+2. Pedestrian meters via ORS/GraphHopper when keyed; otherwise labeled euclidean×1.3 fallback.
+3. LLM titles kept only if they cite a real ordered POI name — no invented places in narrative titles.
+4. ResultPanel shows routing label + trimmed stop count; `docs/ROUTING.md` records the contract.
+5. Interview line: “Phase 6 keeps route order in code—scored, trimmed, and measured honestly without LLM geometry.”

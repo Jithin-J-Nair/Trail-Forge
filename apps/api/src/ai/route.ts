@@ -1,21 +1,17 @@
-import type { PoiLocal, RoutePlan } from '@trailforge/shared';
+import type { PoiLocal, RoutePlan, Theme } from '@trailforge/shared';
+import { measureEuclideanDetour } from '../routing/euclidean.js';
+import { ROUTE_OBJECTIVES, rankPoisForTheme } from './score.js';
 
-const DETOUR = 1.3;
 const WALK_M_PER_MIN = 80;
+/** Cap candidates so large Overpass sets stay tractable. */
+const MAX_CANDIDATES = 24;
 
 function dist(a: PoiLocal, b: PoiLocal): number {
   return Math.hypot(a.x - b.x, a.z - b.z);
 }
 
-function pathLength(order: PoiLocal[]): number {
-  let total = 0;
-  for (let i = 1; i < order.length; i++) {
-    const prev = order[i - 1];
-    const cur = order[i];
-    if (!prev || !cur) continue;
-    total += dist(prev, cur);
-  }
-  return total * DETOUR;
+function pathLengthEuclidean(order: PoiLocal[]): number {
+  return measureEuclideanDetour(order).totalMeters;
 }
 
 function nearestNeighbor(pois: PoiLocal[]): PoiLocal[] {
@@ -77,7 +73,7 @@ function trimToDuration(order: PoiLocal[], durationMinutes: number): PoiLocal[] 
     const next = order[i];
     if (!next) continue;
     const candidate = [...kept, next];
-    if (pathLength(candidate) <= budget) {
+    if (pathLengthEuclidean(candidate) <= budget) {
       kept.push(next);
     } else {
       break;
@@ -86,23 +82,57 @@ function trimToDuration(order: PoiLocal[], durationMinutes: number): PoiLocal[] 
   return kept;
 }
 
+/** Titles must cite a real POI name from the ordered stop list — no invented places. */
+export function groundedRouteTitles(
+  ordered: PoiLocal[],
+  titles?: { titleJa?: string; titleEn?: string },
+): { titleJa: string; titleEn: string } {
+  const names = ordered.map((p) => p.name).filter((n) => n.trim().length > 0);
+  const fallbackJa = names.length ? `${names[0]} ほかの散歩` : '散策ルート';
+  const fallbackEn = names.length ? `Walk from ${names[0]}` : 'Walking route';
+  const usesRealName = (title: string | undefined): boolean =>
+    Boolean(title?.trim() && names.some((n) => title.includes(n)));
+  return {
+    titleJa: usesRealName(titles?.titleJa) ? titles!.titleJa!.trim() : fallbackJa,
+    titleEn: usesRealName(titles?.titleEn) ? titles!.titleEn!.trim() : fallbackEn,
+  };
+}
+
+export type PlanRouteOptions = {
+  theme?: Theme;
+  titles?: { titleJa?: string; titleEn?: string };
+};
+
+/**
+ * Deterministic multi-objective planner — never LLM-ordered.
+ * Theme/walkability rank → NN + 2-opt → duration trim → grounded titles.
+ */
 export function planRoute(
   pois: PoiLocal[],
   durationMinutes: number,
-  titles?: { titleJa?: string; titleEn?: string },
+  options: PlanRouteOptions = {},
 ): RoutePlan {
-  const ordered = trimToDuration(twoOpt(nearestNeighbor(pois)), durationMinutes);
-  const totalMeters = Math.round(pathLength(ordered));
-  const estimatedMinutes = Math.max(1, Math.round(totalMeters / WALK_M_PER_MIN));
-  const names = ordered.map((p) => p.name);
-  const fallbackJa = names.length ? `${names[0]} ほかの散歩` : '散策ルート';
-  const fallbackEn = names.length ? `Walk from ${names[0]}` : 'Walking route';
+  const theme = options.theme ?? 'culture';
+  const ranked = rankPoisForTheme(pois, theme);
+  const candidates = ranked.slice(0, MAX_CANDIDATES).map((r) => r.poi);
+  const orderedFull = twoOpt(nearestNeighbor(candidates));
+  const ordered = trimToDuration(orderedFull, durationMinutes);
+  const euclidean = measureEuclideanDetour(ordered);
+  const estimatedMinutes = Math.max(1, Math.round(euclidean.totalMeters / WALK_M_PER_MIN));
+  const titles = groundedRouteTitles(ordered, options.titles);
 
   return {
     orderedPoiIds: ordered.map((p) => p.id),
-    totalMeters,
+    totalMeters: euclidean.totalMeters,
     estimatedMinutes,
-    titleJa: titles?.titleJa?.trim() || fallbackJa,
-    titleEn: titles?.titleEn?.trim() || fallbackEn,
+    titleJa: titles.titleJa,
+    titleEn: titles.titleEn,
+    scoring: {
+      objectives: ROUTE_OBJECTIVES,
+      candidateCount: pois.length,
+      selectedCount: ordered.length,
+      trimmedCount: Math.max(0, orderedFull.length - ordered.length),
+    },
+    routing: euclidean.routing,
   };
 }

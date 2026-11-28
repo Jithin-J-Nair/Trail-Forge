@@ -13,12 +13,19 @@ import { fetchWikipediaSummary } from '../enrichment/wikipedia.js';
 import { ApiError } from '../http/errors.js';
 import { OsmNotFoundError, OsmUpstreamError } from '../osm/errors.js';
 import { fetchAreaScene, type FetchAreaResult } from '../osm/fetch-area.js';
+import {
+  measurePedestrianRoute,
+  resolveRoutingEnvFromProcess,
+  type RoutingEnv,
+} from '../routing/index.js';
 
 export type GenerateDeps = {
   llm?: LlmJsonProvider;
   fetchImpl?: typeof fetch;
   loadScene?: (request: GenerateRequest) => Promise<FetchAreaResult>;
   now?: () => number;
+  /** Optional pedestrian routing keys; defaults to process env. */
+  routing?: RoutingEnv;
 };
 
 export type StageTimings = {
@@ -79,10 +86,29 @@ export async function generateTour(
   const llmStart = now();
   const draft = await generatePoiDraft(llm, scene.pois);
   const grounded = groundLlmDraft(scene.pois, draft);
-  const route = planRoute(scene.pois, request.durationMinutes, {
-    ...(draft.titleJa ? { titleJa: draft.titleJa } : {}),
-    ...(draft.titleEn ? { titleEn: draft.titleEn } : {}),
+  const titles: { titleJa?: string; titleEn?: string } = {};
+  if (draft.titleJa) titles.titleJa = draft.titleJa;
+  if (draft.titleEn) titles.titleEn = draft.titleEn;
+  let route = planRoute(scene.pois, request.durationMinutes, {
+    theme: request.theme,
+    titles,
   });
+  const orderedPois = route.orderedPoiIds
+    .map((id) => scene.pois.find((p) => p.id === id))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const routingEnv: RoutingEnv = {
+    ...resolveRoutingEnvFromProcess(),
+    ...deps.routing,
+    ...(deps.fetchImpl ? { fetchImpl: deps.fetchImpl } : {}),
+  };
+  const measured = await measurePedestrianRoute(orderedPois, routingEnv);
+  const walkMPerMin = 80;
+  route = {
+    ...route,
+    totalMeters: measured.totalMeters,
+    estimatedMinutes: Math.max(1, Math.round(measured.totalMeters / walkMPerMin)),
+    routing: measured.routing,
+  };
   const llmMs = now() - llmStart;
 
   const provenance = scene.provenance;

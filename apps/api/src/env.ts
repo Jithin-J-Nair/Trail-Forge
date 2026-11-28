@@ -14,6 +14,7 @@ const EnvSchema = z.object({
   GEOAPIFY_API_KEY: z.string().min(1).optional(),
   MAPBOX_ACCESS_TOKEN: z.string().min(1).optional(),
   OPENROUTESERVICE_API_KEY: z.string().min(1).optional(),
+  GRAPHHOPPER_API_KEY: z.string().min(1).optional(),
   LOCAL_DEV_DATA_SOURCE: z.enum(['true', 'false']).default('false'),
 });
 
@@ -35,6 +36,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     GEOAPIFY_API_KEY: source['GEOAPIFY_API_KEY'] || undefined,
     MAPBOX_ACCESS_TOKEN: source['MAPBOX_ACCESS_TOKEN'] || undefined,
     OPENROUTESERVICE_API_KEY: source['OPENROUTESERVICE_API_KEY'] || undefined,
+    GRAPHHOPPER_API_KEY: source['GRAPHHOPPER_API_KEY'] || undefined,
     LOCAL_DEV_DATA_SOURCE: source['LOCAL_DEV_DATA_SOURCE'] || undefined,
   });
 

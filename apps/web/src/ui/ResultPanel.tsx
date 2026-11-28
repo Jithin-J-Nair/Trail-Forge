@@ -49,6 +49,19 @@ export function ResultPanel({
           {(response.route.totalMeters / 1000).toFixed(1)} {t(lang, 'km')} ·{' '}
           {response.route.estimatedMinutes} {t(lang, 'minutes')}
         </p>
+        {response.route.routing ? (
+          <p className="mt-1 text-[11px] text-trail-muted/90" title={response.route.routing.reason}>
+            {response.route.routing.label}
+          </p>
+        ) : null}
+        {response.route.scoring ? (
+          <p className="mt-0.5 text-[11px] text-trail-muted/80">
+            {t(lang, 'routeScoring')}
+            {response.route.scoring.trimmedCount > 0
+              ? ` · ${t(lang, 'routeTrimmed', { trimmed: response.route.scoring.trimmedCount })}`
+              : null}
+          </p>
+        ) : null}
         <div
           className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10"
           role="meter"

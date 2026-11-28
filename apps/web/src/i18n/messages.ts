@@ -33,7 +33,9 @@ export type MessageKey =
   | 'saved'
   | 'saveFailed'
   | 'camAerial'
-  | 'camFollow';
+  | 'camFollow'
+  | 'routeTrimmed'
+  | 'routeScoring';
 
 export const messages = {
   en: {
@@ -73,6 +75,8 @@ export const messages = {
     saveFailed: 'Could not save itinerary.',
     camAerial: 'Aerial',
     camFollow: 'Follow',
+    routeTrimmed: '{trimmed} stops trimmed to fit time',
+    routeScoring: 'Scoring: proximity · theme · walkability · duration',
   },
   ja: {
     appTagline: 'OpenStreetMapの実在スポットからテーマ散策を計画します。',
@@ -111,6 +115,8 @@ export const messages = {
     saveFailed: '旅程を保存できませんでした。',
     camAerial: '俯瞰',
     camFollow: '追従',
+    routeTrimmed: '時間に合わせて {trimmed} 地点を除外',
+    routeScoring: '評価: 近さ · テーマ · 歩きやすさ · 所要時間',
   },
 } as const satisfies Record<'en' | 'ja', Record<MessageKey, string>>;
 
