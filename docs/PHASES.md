@@ -160,3 +160,11 @@
 3. OSM footprint extrusions stay the geometry source — not photoreal 3D tiles (stack tradeoff).
 4. Assumption: mid-latitude solar formula + lon offset is enough for atmosphere; no tz database in the browser.
 5. Interview line: “Day/night is physics from coordinates; the walk is deterministic MotionPath on the grounded route.”
+
+## Reconstruction Phase 3 summary — spatial coverage adapters
+
+1. Added `apps/web/src/spatial/` with `resolveSpatialLayer()` coverage enum (`none` | `partial` | `full`) and honest fallback to OSM extrusions.
+2. Without MapTiler/Cesium keys the scene matches Phase 2 (R3F footprints); keys alone never claim photoreal tiles.
+3. `CoverageBadge` states mode + footprint-only note; `.env.example` documents optional keys; `docs/SPATIAL.md` records limitations.
+4. Unit tests cover missing keys → `none` and “no fake full coverage” without a tiles adapter.
+5. Interview line: “Phase 3 is coverage-aware honesty—extrusions by default, tiles only when an adapter and keys actually exist.”

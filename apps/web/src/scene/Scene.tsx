@@ -13,6 +13,7 @@ import { Pins } from './Pins.js';
 import { dprForQuality, probeQuality } from './quality.js';
 import { Roads } from './Roads.js';
 import { RouteLine } from './RouteLine.js';
+import { CoverageBadge, resolveSpatialLayer, spatialEnvFromImportMeta } from '../spatial/index.js';
 import { SelectFlyTo } from './SelectFlyTo.js';
 import { getSolarState } from './solar.js';
 import { WebGlFallback } from './WebGlFallback.js';
@@ -50,6 +51,7 @@ export function Scene({
   const [timeLabel, setTimeLabel] = useState(initialSolar.localTimeLabel);
   const [isDay, setIsDay] = useState(initialSolar.isDay);
   const [dayFactor, setDayFactor] = useState(initialSolar.dayFactor);
+  const spatial = useMemo(() => resolveSpatialLayer(spatialEnvFromImportMeta()), []);
 
   const onSolar = useCallback((label: string, day: boolean, factor: number) => {
     setTimeLabel(label);
@@ -100,11 +102,12 @@ export function Scene({
         </Suspense>
       </Canvas>
       <p
-        className="pointer-events-none absolute bottom-16 left-1/2 z-20 -translate-x-1/2 rounded-full border border-trail-border bg-black/40 px-3 py-1 text-[10px] tracking-wide text-trail-muted backdrop-blur-md md:bottom-20"
+        className="pointer-events-none absolute bottom-[4.5rem] left-1/2 z-20 -translate-x-1/2 rounded-md border border-trail-border bg-black/40 px-3 py-1 text-[10px] tracking-wide text-trail-muted backdrop-blur-md md:bottom-24"
         role="status"
       >
-        Local {timeLabel} · {isDay ? 'Day' : 'Night'} · OSM extrusions
+        Local {timeLabel} · {isDay ? 'Day' : 'Night'}
       </p>
+      <CoverageBadge status={spatial} />
       <DebugStats enabled={debug} gl={gl} />
     </div>
   );
