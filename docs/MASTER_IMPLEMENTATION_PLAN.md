@@ -154,11 +154,15 @@
 
 ## Phase 6 — Route intelligence
 
+**Track:** TF-40  
+**Branch:** `cursor/recon-phase-6-route-9c79`
+
 ### Deliverables
 
 - Improve deterministic planner (time budget, theme weighting, optional walkability scores from OSM tags only).
 - Still **no** LLM route ordering.
 - Surface route stats honestly (distance, stops, trimmed count).
+- Pedestrian adapter: ORS → GraphHopper → labeled euclidean fallback; titles grounded in real POI names.
 
 ### Success checks
 

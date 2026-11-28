@@ -32,7 +32,16 @@ export {
   type Claim,
 } from './schemas/claim.js';
 export { PoiContentSchema, type PoiContent } from './schemas/poi-content.js';
-export { RoutePlanSchema, type RoutePlan } from './schemas/route-plan.js';
+export {
+  RouteObjectiveSchema,
+  RouteScoringSchema,
+  RouteRoutingSchema,
+  RoutePlanSchema,
+  type RouteObjective,
+  type RouteScoring,
+  type RouteRouting,
+  type RoutePlan,
+} from './schemas/route-plan.js';
 export {
   SceneSchema,
   VerificationSummarySchema,
