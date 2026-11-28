@@ -208,3 +208,11 @@
 3. Demo gate smoke: empty `/app` vs `?demo=1` labeled DEMO; itineraries remain 401 without auth.
 4. Optional Playwright landing→app→demo (`npm run test:e2e`); FPP walk skipped (headless WebGL).
 5. Interview line: “Phase 8 proves the trust surface—rate limits, CORS, and demo honesty—with CI-safe Mock eval.”
+
+## Reconstruction Phase 9 summary — production readiness
+
+1. Completed env examples (API/web/root): LLM, routing, spatial, weather, DEMO, and DATABASE_URL + JWT_SECRET pairing.
+2. `assertAuthEnv` fails fast when Postgres is configured without a ≥16-char JWT_SECRET; unit-tested without booting the server.
+3. README launch path + honest limitations; DEPLOY checklist with placeholder demo URL (not claimed live); ENGINEERING_REPORT scorecard.
+4. PRODUCT_AUDIT §11 updated with Phase 0 vs Phase 9 scores; no invented deploy URL or photoreal coverage.
+5. Interview line: “Phase 9 is ops honesty—secrets documented, auth fail-fast, and a scorecard that admits what we did not ship.”

@@ -1,4 +1,5 @@
 import { createApp } from './app.js';
+import { assertAuthEnv } from './auth-env.js';
 import { runMigrations } from './db/migrate.js';
 import { closePool } from './db/pool.js';
 import { loadEnv } from './env.js';
@@ -6,6 +7,7 @@ import { logger } from './logger.js';
 
 async function main() {
   const env = loadEnv();
+  assertAuthEnv();
   if (process.env['DATABASE_URL']) {
     await runMigrations();
     logger.info('database migrations applied');
