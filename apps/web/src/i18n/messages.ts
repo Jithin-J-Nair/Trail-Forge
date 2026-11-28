@@ -52,8 +52,8 @@ export const messages = {
     errorRetry: 'Something went wrong. Retry?',
     language: 'Language',
     advanced: 'Advanced',
-    play: 'Play',
-    pause: 'Pause',
+    play: 'Walk route',
+    pause: 'Stop walk',
   },
   ja: {
     appTagline: 'OpenStreetMapの実在スポットからテーマ散策を計画します。',
@@ -80,8 +80,8 @@ export const messages = {
     errorRetry: 'エラーが発生しました。再試行しますか？',
     language: '言語',
     advanced: '詳細設定',
-    play: '再生',
-    pause: '一時停止',
+    play: '徒歩で歩く',
+    pause: '歩行停止',
   },
 } as const satisfies Record<'en' | 'ja', Record<MessageKey, string>>;
 

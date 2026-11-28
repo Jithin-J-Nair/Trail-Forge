@@ -30,6 +30,7 @@ const fragmentShader = /* glsl */ `
   varying vec3 vNormalW;
   varying float vHeight;
   uniform float uTime;
+  uniform float uDay;
 
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -37,8 +38,9 @@ const fragmentShader = /* glsl */ `
 
   void main() {
     float t = clamp(vHeight / 45.0, 0.0, 1.0);
-    // Soft dusk facade — keep atmosphere without neon-sign intensity.
-    vec3 base = mix(vec3(0.06, 0.07, 0.12), vec3(0.14, 0.15, 0.22), t);
+    vec3 dayBase = mix(vec3(0.42, 0.44, 0.48), vec3(0.62, 0.64, 0.68), t);
+    vec3 nightBase = mix(vec3(0.06, 0.07, 0.12), vec3(0.14, 0.15, 0.22), t);
+    vec3 base = mix(nightBase, dayBase, uDay);
     float up = abs(vNormalW.y);
     float side = 1.0 - smoothstep(0.55, 0.95, up);
 
@@ -46,13 +48,13 @@ const fragmentShader = /* glsl */ `
     float floorY = floor(vWorldPos.y * 0.42);
     float lit = step(0.72, hash(grid + floorY));
     float flicker = 0.92 + 0.08 * sin(uTime * (0.6 + hash(grid) * 1.2) + hash(grid) * 4.0);
-    vec3 windowCol = vec3(0.55, 0.62, 0.78) * lit * side * flicker * 0.55;
-    vec3 warm = vec3(0.42, 0.36, 0.28) * lit * side * 0.18;
+    // Windows glow mainly at night
+    float nightWin = (1.0 - uDay);
+    vec3 windowCol = vec3(0.85, 0.78, 0.55) * lit * side * flicker * 0.65 * nightWin;
+    vec3 dayWin = vec3(0.55, 0.65, 0.75) * lit * side * 0.12 * uDay;
 
-    vec3 color = base + windowCol + warm;
-    float emissive = length(windowCol) * 0.35;
+    vec3 color = base + windowCol + dayWin;
     gl_FragColor = vec4(color, 1.0);
-    gl_FragColor.rgb += vec3(emissive * 0.06);
   }
 `;
 
@@ -78,7 +80,13 @@ function buildingGeometry(b: Building): ExtrudeGeometry {
   return geom;
 }
 
-export function Buildings({ buildings }: { buildings: Building[] }) {
+export function Buildings({
+  buildings,
+  dayFactor = 0.35,
+}: {
+  buildings: Building[];
+  dayFactor?: number;
+}) {
   const { geometry, material } = useMemo(() => {
     const geos: BufGeo[] = [];
     for (const b of buildings) {
@@ -90,9 +98,11 @@ export function Buildings({ buildings }: { buildings: Building[] }) {
     const mat = new ShaderMaterial({
       vertexShader,
       fragmentShader,
-      uniforms: { uTime: { value: 0 } },
+      uniforms: {
+        uTime: { value: 0 },
+        uDay: { value: 0.35 },
+      },
     });
-    // Keep a height-tinted fallback color attribute unused by shader but harmless if merged empty
     if (merged && !merged.getAttribute('color')) {
       const n = merged.attributes.position?.count ?? 0;
       const colors = new Float32Array(n * 3);
@@ -106,6 +116,11 @@ export function Buildings({ buildings }: { buildings: Building[] }) {
     }
     return { geometry: merged ?? new BufferGeometry(), material: mat };
   }, [buildings]);
+
+  useEffect(() => {
+    const u = material.uniforms['uDay'];
+    if (u) u.value = dayFactor;
+  }, [dayFactor, material]);
 
   useEffect(() => {
     let raf = 0;
