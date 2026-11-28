@@ -24,6 +24,7 @@ flowchart LR
 4. Grounding validator drops/flags uncited claims and hallucinated places.
 5. Route order is computed in code (nearest-neighbor + 2-opt), not by the LLM.
 6. Web renders a merged 3D scene, supports review, and exports approved facts.
+7. Optional spatial upgrades (MapLibre / terrain / 3D tiles) resolve through `apps/web/src/spatial/` with an honest `coverage` enum; missing keys keep OSM extrusions (see `docs/SPATIAL.md`).
 
 ## Why route ordering is deterministic
 

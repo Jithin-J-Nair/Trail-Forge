@@ -95,6 +95,9 @@
 
 ## Phase 3 — Spatial (additive)
 
+**Track:** TF-37  
+**Branch:** `cursor/recon-phase-3-spatial-9c79`
+
 ### Deliverables
 
 - Provider interface for optional terrain / 3D tiles / MapLibre style with `coverage` enum.
