@@ -120,3 +120,11 @@
 3. Restored DEMO honesty: `?demo=1` / `VITE_DEMO_MODE`, SAMPLE_RESPONSE `demo: true` + non-live provenance; auth login lives on Profile, not SearchPanel.
 4. Docs kept short: root `README` + `docs/{ARCHITECTURE,PHASES,PERFORMANCE,DEPLOY,EVAL}` only.
 5. Interview line: “We kept Arena’s useful geo resilience and deleted the speculative novel — green CI and honest DEMO labels matter more than blueprint MD files.”
+
+## Reconstruction Phase 0 summary — product audit + master plan
+
+1. Audited `main` @ `d9a6536`: working OSM → generate → grounding → R3F → export spine; DEMO still auto-paints SAMPLE on `/app` until PR #16.
+2. Architecture decision: keep R3F extrusions primary; MapLibre/Cesium/terrain only as key-gated additive adapters — no stack rewrite.
+3. Open PR verdicts: merge #16 (honesty), merge #17 after #16 (solar/FPP); #19 skills already merged to main.
+4. Wrote `docs/PRODUCT_AUDIT.md` and `docs/MASTER_IMPLEMENTATION_PLAN.md` (phases 0–9); kept `docs/AGENT_SKILLS.md` from #19/TF-34.
+5. Interview line: “Phase 0 is an honest map of what already works — we plan reconstruction around the live OSM path instead of inventing a new product.”
