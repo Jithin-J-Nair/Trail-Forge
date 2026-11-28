@@ -9,6 +9,7 @@ import { detectLang, t, type UiLang } from '../i18n/messages.js';
 import { useTourSceneStore } from '../scene/tour-scene-store.js';
 import { useTourStore } from '../store/tour-store.js';
 import type { ApprovedContent } from '../ui/export.js';
+import type { CameraMode } from '../scene/camera-mode.js';
 import { EmptyCanvas } from '../ui/EmptyCanvas.js';
 import { ResultPanel } from '../ui/ResultPanel.js';
 import { RouteBar } from '../ui/RouteBar.js';
@@ -33,7 +34,7 @@ export function GeneratePage() {
   const [toast, setToast] = useState<string | null>(null);
   const [mobileSheet, setMobileSheet] = useState<'search' | 'results' | null>('search');
   const [demoActive, setDemoActive] = useState(false);
-  const [playing, setPlaying] = useState(false);
+  const [cameraMode, setCameraMode] = useState<CameraMode>('aerial');
   const [user, setUser] = useState<AuthUser | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -115,7 +116,7 @@ export function GeneratePage() {
     abortRef.current = controller;
     setStatus('loading');
     setStage('locating');
-    setPlaying(false);
+    setCameraMode('aerial');
     const timers = [
       window.setTimeout(() => setStage('fetching'), 400),
       window.setTimeout(() => setStage('writing'), 900),
@@ -184,8 +185,8 @@ export function GeneratePage() {
           <Scene
             data={response}
             debug={debug}
-            playing={playing}
-            onPlayStop={() => setPlaying(false)}
+            cameraMode={cameraMode}
+            onCameraModeChange={setCameraMode}
           />
         </Suspense>
       ) : (
@@ -221,8 +222,8 @@ export function GeneratePage() {
               lang={lang}
               response={response}
               content={content}
-              playing={playing}
-              onTogglePlay={() => setPlaying((p) => !p)}
+              cameraMode={cameraMode}
+              onCameraModeChange={setCameraMode}
             />
           </div>
         ) : null}
@@ -238,8 +239,8 @@ export function GeneratePage() {
         setContent={setContent}
         canSave={Boolean(user)}
         onSave={handleSave}
-        playing={playing}
-        onTogglePlay={() => setPlaying((p) => !p)}
+        cameraMode={cameraMode}
+        onCameraModeChange={setCameraMode}
       />
 
       <Footer />

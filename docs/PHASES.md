@@ -168,3 +168,11 @@
 3. `CoverageBadge` states mode + footprint-only note; `.env.example` documents optional keys; `docs/SPATIAL.md` records limitations.
 4. Unit tests cover missing keys → `none` and “no fake full coverage” without a tiles adapter.
 5. Interview line: “Phase 3 is coverage-aware honesty—extrusions by default, tiles only when an adapter and keys actually exist.”
+
+## Reconstruction Phase 4 summary — cinematic camera polish
+
+1. Kept #17 FPP MotionPath walk; extracted shared `route-path` helpers for densify + nearest stop.
+2. Added elevated Follow camera along the ordered route; Aerial keeps IntroCamera orbit when idle.
+3. RouteBar offers Aerial / Follow / Walk (FPP); Esc or end returns to aerial; reduced-motion snaps.
+4. No FPP rewrite — follow is additive GSAP MotionPath at chase height selecting nearest POIs.
+5. Interview line: “Phase 4 is three honest cameras on one grounded route—orbit, follow, and eye-height walk.”

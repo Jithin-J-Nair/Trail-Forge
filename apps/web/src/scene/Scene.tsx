@@ -3,9 +3,12 @@ import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import type { GenerateResponse } from '@trailforge/shared';
 import type { WebGLRenderer } from 'three';
+import { CoverageBadge, resolveSpatialLayer, spatialEnvFromImportMeta } from '../spatial/index.js';
 import { Buildings } from './Buildings.js';
+import type { CameraMode } from './camera-mode.js';
 import { DayNightLights } from './DayNightLights.js';
 import { DebugStats } from './DebugStats.js';
+import { FollowCamController } from './FollowCam.js';
 import { FppWalkController } from './FppWalk.js';
 import { IntroCamera } from './IntroCamera.js';
 import { KeyboardNav } from './KeyboardNav.js';
@@ -13,7 +16,6 @@ import { Pins } from './Pins.js';
 import { dprForQuality, probeQuality } from './quality.js';
 import { Roads } from './Roads.js';
 import { RouteLine } from './RouteLine.js';
-import { CoverageBadge, resolveSpatialLayer, spatialEnvFromImportMeta } from '../spatial/index.js';
 import { SelectFlyTo } from './SelectFlyTo.js';
 import { getSolarState } from './solar.js';
 import { WebGlFallback } from './WebGlFallback.js';
@@ -30,14 +32,16 @@ function supportsWebGL(): boolean {
 export function Scene({
   data,
   debug = false,
-  playing = false,
-  onPlayStop,
+  cameraMode = 'aerial',
+  onCameraModeChange,
 }: {
   data: GenerateResponse;
   debug?: boolean;
-  playing?: boolean;
-  onPlayStop?: () => void;
+  cameraMode?: CameraMode;
+  onCameraModeChange?: (mode: CameraMode) => void;
 }) {
+  const walking = cameraMode === 'fpp';
+  const following = cameraMode === 'follow';
   const [webglOk, setWebglOk] = useState(true);
   const [gl, setGl] = useState<WebGLRenderer | null>(null);
   const quality = useMemo(() => probeQuality(), []);
@@ -76,17 +80,23 @@ export function Scene({
       >
         <Suspense fallback={null}>
           <DayNightLights lat={data.center.lat} lon={data.center.lon} onSolar={onSolar} />
-          <IntroCamera enabled={!playing} />
+          <IntroCamera enabled={cameraMode === 'aerial'} />
           <Roads roads={data.scene.roads} />
           <Buildings buildings={data.scene.buildings} dayFactor={dayFactor} />
           <RouteLine pois={data.pois} orderedPoiIds={data.route.orderedPoiIds} />
           <Pins pois={data.pois} content={data.content} />
-          {!playing ? <SelectFlyTo pois={data.pois} /> : null}
+          {cameraMode === 'aerial' ? <SelectFlyTo pois={data.pois} /> : null}
+          <FollowCamController
+            pois={data.pois}
+            orderedPoiIds={data.route.orderedPoiIds}
+            active={following}
+            onStop={() => onCameraModeChange?.('aerial')}
+          />
           <FppWalkController
             pois={data.pois}
             orderedPoiIds={data.route.orderedPoiIds}
-            playing={playing}
-            onStop={() => onPlayStop?.()}
+            playing={walking}
+            onStop={() => onCameraModeChange?.('aerial')}
           />
           <KeyboardNav data={data} />
           {quality !== 'low' && !reduceMotion && dayFactor < 0.45 ? (

@@ -31,7 +31,9 @@ export type MessageKey =
   | 'openDemo'
   | 'saveNeedSignIn'
   | 'saved'
-  | 'saveFailed';
+  | 'saveFailed'
+  | 'camAerial'
+  | 'camFollow';
 
 export const messages = {
   en: {
@@ -69,6 +71,8 @@ export const messages = {
     saveNeedSignIn: 'Sign in on Profile to save itineraries.',
     saved: 'Itinerary saved',
     saveFailed: 'Could not save itinerary.',
+    camAerial: 'Aerial',
+    camFollow: 'Follow',
   },
   ja: {
     appTagline: 'OpenStreetMapの実在スポットからテーマ散策を計画します。',
@@ -105,6 +109,8 @@ export const messages = {
     saveNeedSignIn: '保存するにはプロフィールでサインインしてください。',
     saved: '旅程を保存しました',
     saveFailed: '旅程を保存できませんでした。',
+    camAerial: '俯瞰',
+    camFollow: '追従',
   },
 } as const satisfies Record<'en' | 'ja', Record<MessageKey, string>>;
 
