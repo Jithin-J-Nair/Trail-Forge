@@ -115,11 +115,15 @@
 
 ## Phase 4 — Cinematic FPP
 
+**Track:** TF-38  
+**Branch:** `cursor/recon-phase-4-cameras-9c79`
+
 ### Deliverables
 
 - Eye-height route walk along ordered POIs (adopt/rebase #17 `FppWalk` + GSAP MotionPath if not already merged).
 - Esc / Stop ends walk; orbit idle disabled while walking; reduced-motion snap.
 - Play control copy: Walk route / 徒歩で歩く.
+- Polish: aerial / follow / FPP camera modes on RouteBar without rewriting FPP.
 
 ### Success checks
 

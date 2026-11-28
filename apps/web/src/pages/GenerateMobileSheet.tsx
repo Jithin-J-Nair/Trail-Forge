@@ -1,5 +1,6 @@
 import type { GenerateResponse } from '@trailforge/shared';
 import type { ReactNode } from 'react';
+import type { CameraMode } from '../scene/camera-mode.js';
 import type { UiLang } from '../i18n/messages.js';
 import type { ApprovedContent } from '../ui/export.js';
 import { ResultPanel } from '../ui/ResultPanel.js';
@@ -15,8 +16,8 @@ export function GenerateMobileSheet({
   setContent,
   canSave,
   onSave,
-  playing,
-  onTogglePlay,
+  cameraMode,
+  onCameraModeChange,
 }: {
   mobileSheet: 'search' | 'results' | null;
   setMobileSheet: (v: 'search' | 'results' | null) => void;
@@ -27,8 +28,8 @@ export function GenerateMobileSheet({
   setContent: (c: ApprovedContent[]) => void;
   canSave: boolean;
   onSave: () => Promise<void>;
-  playing: boolean;
-  onTogglePlay: () => void;
+  cameraMode: CameraMode;
+  onCameraModeChange: (mode: CameraMode) => void;
 }) {
   return (
     <div className="absolute inset-x-0 bottom-0 z-30 md:hidden">
@@ -75,8 +76,8 @@ export function GenerateMobileSheet({
                   lang={lang}
                   response={response}
                   content={content}
-                  playing={playing}
-                  onTogglePlay={onTogglePlay}
+                  cameraMode={cameraMode}
+                  onCameraModeChange={onCameraModeChange}
                 />
               </div>
             </>

@@ -1,4 +1,5 @@
 import type { GenerateResponse } from '@trailforge/shared';
+import type { CameraMode } from '../scene/camera-mode.js';
 import { t, type UiLang } from '../i18n/messages.js';
 import { useTourSceneStore } from '../scene/tour-scene-store.js';
 import {
@@ -13,31 +14,50 @@ export function RouteBar({
   lang,
   response,
   content,
-  playing,
-  onTogglePlay,
+  cameraMode,
+  onCameraModeChange,
 }: {
   lang: UiLang;
   response: GenerateResponse;
   content: ApprovedContent[];
-  playing: boolean;
-  onTogglePlay: () => void;
+  cameraMode: CameraMode;
+  onCameraModeChange: (mode: CameraMode) => void;
 }) {
   const selected = useTourSceneStore((s) => s.selectedPoiId);
   const setSelected = useTourSceneStore((s) => s.setSelectedPoiId);
   const ordered = response.route.orderedPoiIds
     .map((id) => response.pois.find((p) => p.id === id))
     .filter(Boolean);
+  const walking = cameraMode === 'fpp';
 
   return (
     <div className="glass-panel flex w-full max-w-3xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:gap-4">
-      <button
-        type="button"
-        className="glass-btn-primary shrink-0 px-5"
-        onClick={onTogglePlay}
-        aria-pressed={playing}
-      >
-        {playing ? t(lang, 'pause') : t(lang, 'play')}
-      </button>
+      <div className="flex shrink-0 flex-wrap gap-1.5" role="group" aria-label="Camera mode">
+        <button
+          type="button"
+          className={`glass-btn px-3 py-2 text-xs ${cameraMode === 'aerial' ? 'glass-btn-primary' : 'glass-btn-ghost'}`}
+          aria-pressed={cameraMode === 'aerial'}
+          onClick={() => onCameraModeChange('aerial')}
+        >
+          {t(lang, 'camAerial')}
+        </button>
+        <button
+          type="button"
+          className={`glass-btn px-3 py-2 text-xs ${cameraMode === 'follow' ? 'glass-btn-primary' : 'glass-btn-ghost'}`}
+          aria-pressed={cameraMode === 'follow'}
+          onClick={() => onCameraModeChange('follow')}
+        >
+          {t(lang, 'camFollow')}
+        </button>
+        <button
+          type="button"
+          className={`glass-btn px-3 py-2 text-xs ${walking ? 'glass-btn-primary' : 'glass-btn-ghost'}`}
+          aria-pressed={walking}
+          onClick={() => onCameraModeChange(walking ? 'aerial' : 'fpp')}
+        >
+          {walking ? t(lang, 'pause') : t(lang, 'play')}
+        </button>
+      </div>
 
       <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1">
         {ordered.map((poi) => {
@@ -49,10 +69,8 @@ export function RouteBar({
               type="button"
               title={poi.name}
               aria-label={poi.name}
-              className={`h-2.5 w-2.5 shrink-0 rounded-full transition ${
-                active
-                  ? 'scale-125 bg-trail-cyan shadow-[0_0_12px_rgba(79,227,255,0.8)]'
-                  : 'bg-trail-violet/70 hover:bg-trail-violet'
+              className={`h-2.5 w-2.5 shrink-0 rounded-md transition ${
+                active ? 'scale-125 bg-trail-amber' : 'bg-trail-teal/70 hover:bg-trail-teal'
               }`}
               onClick={() => setSelected(poi.id)}
             />
