@@ -32,11 +32,16 @@ export function GenerateMobileSheet({
   onCameraModeChange: (mode: CameraMode) => void;
 }) {
   return (
-    <div className="absolute inset-x-0 bottom-0 z-30 md:hidden">
-      <div className="mb-2 flex justify-center gap-2 px-3">
+    <div className="absolute inset-x-0 bottom-0 z-30 pb-[env(safe-area-inset-bottom)] md:hidden">
+      <div
+        className="mb-2 flex justify-center gap-2 px-3"
+        role="toolbar"
+        aria-label="Mobile panels"
+      >
         <button
           type="button"
           className="glass-btn-ghost px-3 py-1.5 text-xs"
+          aria-pressed={mobileSheet === 'search'}
           onClick={() => setMobileSheet('search')}
         >
           Search
@@ -45,6 +50,7 @@ export function GenerateMobileSheet({
           <button
             type="button"
             className="glass-btn-ghost px-3 py-1.5 text-xs"
+            aria-pressed={mobileSheet === 'results'}
             onClick={() => setMobileSheet('results')}
           >
             Results
@@ -52,7 +58,12 @@ export function GenerateMobileSheet({
         ) : null}
       </div>
       {mobileSheet ? (
-        <div className="max-h-[58vh] overflow-auto rounded-t-glass border border-trail-border bg-trail-surface p-3 backdrop-blur-glass">
+        <div
+          className="max-h-[min(58vh,calc(100dvh-6rem))] overflow-auto rounded-t-glass border border-trail-border bg-trail-surface p-3 backdrop-blur-glass"
+          role="dialog"
+          aria-modal="false"
+          aria-label={mobileSheet === 'search' ? 'Search' : 'Results'}
+        >
           <button
             type="button"
             className="mb-2 w-full text-center text-xs text-trail-muted"

@@ -44,7 +44,7 @@ export function SavedPage() {
                     {new Date(it.createdAt).toLocaleString()}
                   </div>
                 </div>
-                <div className="text-xs text-trail-cyan">
+                <div className="text-xs text-trail-teal">
                   {it.verificationSummary?.verified ?? 0} verified
                 </div>
               </div>
