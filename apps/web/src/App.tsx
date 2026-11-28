@@ -6,10 +6,10 @@ import { ProfilePage } from './pages/ProfilePage.js';
 
 function Nav() {
   const link = ({ isActive }: { isActive: boolean }) =>
-    `px-3 py-1.5 text-xs rounded-lg ${isActive ? 'bg-trail-cyan/20 text-trail-cyan' : 'text-trail-muted hover:text-trail-fog'}`;
+    `px-3 py-1.5 text-xs rounded-md ${isActive ? 'bg-trail-amber/20 text-trail-amber' : 'text-trail-muted hover:text-trail-fog'}`;
   return (
-    <nav className="fixed top-3 left-1/2 z-50 -translate-x-1/2 flex gap-1 rounded-full border border-trail-border bg-trail-surface/90 px-2 py-1 backdrop-blur-glass">
-      <NavLink to="/" className={link}>
+    <nav className="fixed top-3 left-1/2 z-50 -translate-x-1/2 flex gap-1 rounded-xl border border-trail-border bg-trail-surface/90 px-2 py-1 backdrop-blur-glass">
+      <NavLink to="/" className={link} end>
         Home
       </NavLink>
       <NavLink to="/app" className={link}>

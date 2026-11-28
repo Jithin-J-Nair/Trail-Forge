@@ -128,3 +128,11 @@
 3. Open PR verdicts: merge #16 (honesty), merge #17 after #16 (solar/FPP); #19 skills already merged to main.
 4. Wrote `docs/PRODUCT_AUDIT.md` and `docs/MASTER_IMPLEMENTATION_PLAN.md` (phases 0–9); kept `docs/AGENT_SKILLS.md` from #19/TF-34.
 5. Interview line: “Phase 0 is an honest map of what already works — we plan reconstruction around the live OSM path instead of inventing a new product.”
+
+## Reconstruction Phase 1 summary — design system + cinematic landing
+
+1. Retokenized the dusk HUD: charcoal slate, soft teal, warm amber (dropped cyan/violet neon); Fraunces + Source Sans 3 + Noto Sans JP.
+2. Cinematic `/` landing: full-bleed cartographic SVG atmosphere, hero brand TrailForge, one headline, one support line, CTA group, OSM attribution.
+3. Entrance + map-drift + pin-glow motions with `prefers-reduced-motion` already gated in CSS; nav uses amber active state (not neon pills).
+4. Glass HUD classes remapped to new tokens so `/app` generate → R3F path is unchanged.
+5. Interview line: “Phase 1 gives TrailForge a cartographic dusk identity—the brand leads the first viewport before you open the live city HUD.”

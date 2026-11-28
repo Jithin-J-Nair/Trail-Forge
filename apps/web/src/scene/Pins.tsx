@@ -81,7 +81,7 @@ function Pin({ poi }: { poi: PinPoi }) {
           style={{
             color,
             fontSize: 12,
-            fontFamily: 'Space Grotesk, sans-serif',
+            fontFamily: 'Fraunces, Georgia, serif',
             fontWeight: 600,
             whiteSpace: 'nowrap',
             textShadow: '0 0 10px rgba(0,0,0,0.85)',
