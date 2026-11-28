@@ -22,6 +22,23 @@ npm run dev
 
 Default `LLM_PROVIDER=mock` — no Anthropic key required for CI or first run.
 
+### Production / Cursor publish (single process)
+
+Vite-only publish cannot see server secrets such as `GOOGLE_MAPS_API_KEY`. Run the API as the process that also serves the built web UI:
+
+```bash
+npm ci
+cp apps/api/.env.example apps/api/.env   # set GOOGLE_MAPS_API_KEY server-side only
+npm start                                # builds web → serves apps/web/dist from API
+```
+
+| Surface                 | URL                              |
+| ----------------------- | -------------------------------- |
+| App + API (same origin) | http://localhost:3001            |
+| Health                  | http://localhost:3001/api/health |
+
+`npm start` builds `@trailforge/web`, then starts the API with `NODE_ENV=production` on `PORT` (default **3001**). In production the API serves `apps/web/dist` (override path with `WEB_DIST_PATH`; force with `SERVE_WEB=true` / disable with `SERVE_WEB=false`). Same-origin browser calls do not need a separate Vite proxy; set `CORS_ORIGIN` to the public app URL when the SPA is hosted elsewhere.
+
 ### Demo / fixtures (always labeled)
 
 - UI: `http://localhost:5173/app?demo=1` or `VITE_DEMO_MODE=true` → **DEMO DATA** badge
@@ -59,6 +76,7 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
+npm start             # build web + serve from API (PORT=3001)
 npm run eval          # MockProvider → docs/EVAL.md
 npm run test:e2e      # optional Playwright smoke (install chromium first)
 ```

@@ -217,6 +217,14 @@
 4. PRODUCT_AUDIT §11 updated with Phase 0 vs Phase 9 scores; no invented deploy URL or photoreal coverage.
 5. Interview line: “Phase 9 is ops honesty—secrets documented, auth fail-fast, and a scorecard that admits what we did not ship.”
 
+## Publish fix — API serves web (Google tiles secrets)
+
+1. In production (or `SERVE_WEB=true`), `@trailforge/api` serves `apps/web/dist` after `/api` routes with SPA fallback.
+2. Root `npm start` builds the web app then starts the API on `PORT` (default 3001) so Cursor publish can bind `GOOGLE_MAPS_API_KEY` server-side.
+3. CORS still allow-lists `CORS_ORIGIN`, and also permits same-origin when the SPA is hosted by the API.
+4. Assumption: relative `/api` fetches stay same-origin; Vite-only static publish cannot see the Maps key.
+5. Interview line: “One Node process hosts UI + API so Map Tiles stay proxied and the key never reaches the browser.”
+
 ## Google Photorealistic 3D Tiles summary
 
 1. API reads `GOOGLE_MAPS_API_KEY` only; `GET /api/spatial/google-tiles-session` mints a proxied root URL or 503 when unset; tile proxy never logs the key.

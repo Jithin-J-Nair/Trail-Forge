@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "concurrently -n web,api -c cyan,magenta \"npm run dev -w @trailforge/web\" \"npm run dev -w @trailforge/api\"",
     "build": "npm run build --workspaces --if-present",
+    "start": "npm run build -w @trailforge/web && NODE_ENV=production npm run start -w @trailforge/api",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint . --fix && prettier --write .",
