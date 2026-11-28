@@ -43,7 +43,7 @@ export function DayNightLights({
 }: {
   lat: number;
   lon: number;
-  onSolar?: (label: string, isDay: boolean, dayFactor: number) => void;
+  onSolar?: (label: string, isDay: boolean, dayFactor: number, elevDeg: number) => void;
 }) {
   const sun = useRef<DirectionalLight>(null);
   const hemi = useRef<HemisphereLight>(null);
@@ -78,10 +78,10 @@ export function DayNightLights({
     }
     ground.current.set(mixHex('#0a0c12', '#2c332c', d));
 
-    const key = `${s.localTimeLabel}|${s.isDay}|${d.toFixed(2)}`;
+    const key = `${s.localTimeLabel}|${s.isDay}|${d.toFixed(2)}|${s.elevationDeg.toFixed(0)}`;
     if (onSolar && key !== lastKey.current) {
       lastKey.current = key;
-      onSolar(s.localTimeLabel, s.isDay, s.dayFactor);
+      onSolar(s.localTimeLabel, s.isDay, s.dayFactor, s.elevationDeg);
     }
   });
 

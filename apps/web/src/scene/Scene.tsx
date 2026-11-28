@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import type { GenerateResponse } from '@trailforge/shared';
 import type { WebGLRenderer } from 'three';
 import { CoverageBadge, resolveSpatialLayer, spatialEnvFromImportMeta } from '../spatial/index.js';
+import { useWeather, WeatherBadge } from '../weather/index.js';
 import { Buildings } from './Buildings.js';
 import type { CameraMode } from './camera-mode.js';
 import { DayNightLights } from './DayNightLights.js';
@@ -55,12 +56,15 @@ export function Scene({
   const [timeLabel, setTimeLabel] = useState(initialSolar.localTimeLabel);
   const [isDay, setIsDay] = useState(initialSolar.isDay);
   const [dayFactor, setDayFactor] = useState(initialSolar.dayFactor);
+  const [sunElev, setSunElev] = useState(initialSolar.elevationDeg);
   const spatial = useMemo(() => resolveSpatialLayer(spatialEnvFromImportMeta()), []);
+  const weather = useWeather(data.center.lat, data.center.lon);
 
-  const onSolar = useCallback((label: string, day: boolean, factor: number) => {
+  const onSolar = useCallback((label: string, day: boolean, factor: number, elev: number) => {
     setTimeLabel(label);
     setIsDay(day);
     setDayFactor(factor);
+    setSunElev(elev);
   }, []);
 
   useEffect(() => {
@@ -114,9 +118,11 @@ export function Scene({
       <p
         className="pointer-events-none absolute bottom-[4.5rem] left-1/2 z-20 -translate-x-1/2 rounded-md border border-trail-border bg-black/40 px-3 py-1 text-[10px] tracking-wide text-trail-muted backdrop-blur-md md:bottom-24"
         role="status"
+        data-testid="solar-status"
       >
-        Local {timeLabel} · {isDay ? 'Day' : 'Night'}
+        Local {timeLabel} · {isDay ? 'Day' : 'Night'} · sun {Math.round(sunElev)}°
       </p>
+      <WeatherBadge status={weather} />
       <CoverageBadge status={spatial} />
       <DebugStats enabled={debug} gl={gl} />
     </div>

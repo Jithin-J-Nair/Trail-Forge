@@ -176,3 +176,11 @@
 3. RouteBar offers Aerial / Follow / Walk (FPP); Esc or end returns to aerial; reduced-motion snaps.
 4. No FPP rewrite — follow is additive GSAP MotionPath at chase height selecting nearest POIs.
 5. Interview line: “Phase 4 is three honest cameras on one grounded route—orbit, follow, and eye-height walk.”
+
+## Reconstruction Phase 5 summary — environment intelligence
+
+1. Solar civil time exposes `utcOffsetHours` + sun elevation on the scene HUD; Tokyo noon/midnight tests cover dayFactor and local clock.
+2. Weather module defaults to labeled unavailable; `VITE_WEATHER_PROVIDER=openmeteo` fetches live Open-Meteo (no key).
+3. Failures stay “Weather unavailable” — never invent rain/snow particles or silent SAMPLE weather.
+4. `docs/ENVIRONMENT.md` records solar honesty + weather opt-in; building `uDay` still follows solar dayFactor.
+5. Interview line: “Phase 5 is environment honesty—longitude solar lighting plus weather that stays off until a real provider answers.”
