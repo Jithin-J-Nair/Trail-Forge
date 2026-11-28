@@ -4,16 +4,19 @@
 
 :root {
   color-scheme: dark;
-  --trail-bg: #05070d;
-  --trail-surface: rgba(14, 18, 30, 0.65);
-  --trail-border: rgba(255, 255, 255, 0.08);
-  --trail-text: #e8ecf5;
-  --trail-muted: #8a94a8;
-  --trail-cyan: #4fe3ff;
-  --trail-violet: #8b7bff;
-  --trail-verified: #4fe3a3;
-  --trail-review: #ffb547;
-  --trail-radius: 16px;
+  --trail-bg: #0c1418;
+  --trail-surface: rgba(16, 28, 32, 0.72);
+  --trail-border: rgba(232, 238, 233, 0.1);
+  --trail-text: #e8eee9;
+  --trail-muted: #8b9a93;
+  --trail-teal: #3fa894;
+  --trail-amber: #c9955a;
+  /* Compat aliases used by focus/range until HUD fully retokens */
+  --trail-cyan: var(--trail-teal);
+  --trail-violet: var(--trail-amber);
+  --trail-verified: #5cbf8a;
+  --trail-review: #d4a35a;
+  --trail-radius: 14px;
 }
 
 html,
@@ -25,7 +28,7 @@ body,
 
 body {
   min-height: 100vh;
-  font-family: Inter, 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif;
+  font-family: 'Source Sans 3', 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif;
   background: var(--trail-bg);
   color: var(--trail-text);
   overflow: hidden;
@@ -37,11 +40,11 @@ body {
   }
 
   .glass-chip {
-    @apply rounded-full border border-trail-border px-3 py-1.5 text-xs font-medium capitalize tracking-wide transition;
+    @apply rounded-lg border border-trail-border px-3 py-1.5 text-xs font-medium capitalize tracking-wide transition;
   }
 
   .glass-chip-active {
-    @apply border-trail-cyan/50 bg-trail-cyan/15 text-trail-cyan;
+    @apply border-trail-teal/50 bg-trail-teal/15 text-trail-teal;
   }
 
   .glass-input {
@@ -53,7 +56,7 @@ body {
   }
 
   .glass-btn-primary {
-    @apply glass-btn bg-gradient-to-r from-trail-cyan to-trail-violet text-[#05070D] shadow-[0_0_24px_rgba(79,227,255,0.25)];
+    @apply glass-btn bg-trail-amber text-[#0C1418] hover:bg-[#d4a56c];
   }
 
   .glass-btn-ghost {
@@ -70,11 +73,12 @@ textarea {
     background-color 160ms ease,
     border-color 160ms ease,
     opacity 160ms ease,
-    box-shadow 160ms ease;
+    box-shadow 160ms ease,
+    color 160ms ease;
 }
 
 :focus-visible {
-  outline: 2px solid var(--trail-cyan);
+  outline: 2px solid var(--trail-amber);
   outline-offset: 3px;
 }
 
@@ -91,9 +95,8 @@ input[type='range']::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 999px;
-  background: var(--trail-cyan);
-  border: 2px solid #05070d;
-  box-shadow: 0 0 12px rgba(79, 227, 255, 0.55);
+  background: var(--trail-amber);
+  border: 2px solid #0c1418;
   cursor: pointer;
 }
 
