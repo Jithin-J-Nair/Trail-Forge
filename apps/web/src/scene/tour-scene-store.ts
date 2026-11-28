@@ -25,7 +25,14 @@ export const useTourSceneStore = create<TourSceneState>((set) => ({
   uiLanguage: 'en',
   status: 'idle',
   errorMessage: null,
-  setResponse: (response) => set({ response, status: response ? 'ready' : 'idle' }),
+  setResponse: (response) =>
+    set({
+      response,
+      selectedPoiId: null,
+      hoveredPoiId: null,
+      status: response ? 'ready' : 'idle',
+      errorMessage: null,
+    }),
   setSelectedPoiId: (selectedPoiId) => set({ selectedPoiId }),
   setHoveredPoiId: (hoveredPoiId) => set({ hoveredPoiId }),
   setUiLanguage: (uiLanguage) => set({ uiLanguage }),

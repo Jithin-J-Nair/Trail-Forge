@@ -145,6 +145,14 @@
 4. Assumption: empty scene until Generate is preferable to a fake dense city that reads as “the product.”
 5. Interview line: “Demo is opt-in; the 3D look stays dusk, not a nightclub.”
 
+## Reconstruction Phase 2 summary — core app honesty + persistence shell
+
+1. Empty `/app` shows honest EmptyCanvas until Generate or `?demo=1`; DEMO badge stays below nav when fixture/devMode.
+2. Offline/error paths toast without painting SAMPLE unless DEMO is explicit; selection clears on new response.
+3. Save itinerary requires signed-in user; failures toast without inventing city data; ResultPanel shows sign-in hint.
+4. Location search / theme / route bar shell unchanged; real POIs still come from generate API only.
+5. Interview line: “Phase 2 makes the empty canvas tell the truth—generate live OSM or open a labeled demo, never a silent fake city.”
+
 ## HQ cinematic FPP + solar day/night
 
 1. Scene lighting follows approximate solar elevation from the tour lat/lon (longitude-based local clock); buildings fade windows day→night via `uDay`.

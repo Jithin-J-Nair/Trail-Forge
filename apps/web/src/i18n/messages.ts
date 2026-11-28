@@ -24,7 +24,14 @@ export type MessageKey =
   | 'language'
   | 'advanced'
   | 'play'
-  | 'pause';
+  | 'pause'
+  | 'emptyTitle'
+  | 'emptyBody'
+  | 'emptyHint'
+  | 'openDemo'
+  | 'saveNeedSignIn'
+  | 'saved'
+  | 'saveFailed';
 
 export const messages = {
   en: {
@@ -54,6 +61,14 @@ export const messages = {
     advanced: 'Advanced',
     play: 'Walk route',
     pause: 'Stop walk',
+    emptyTitle: 'No city loaded',
+    emptyBody:
+      'Search an area, pick a theme, and generate a tour from live OpenStreetMap places. We never invent locations.',
+    emptyHint: 'Use the panel to start — the 3D scene appears after a real generate.',
+    openDemo: 'Open labeled DEMO city',
+    saveNeedSignIn: 'Sign in on Profile to save itineraries.',
+    saved: 'Itinerary saved',
+    saveFailed: 'Could not save itinerary.',
   },
   ja: {
     appTagline: 'OpenStreetMapの実在スポットからテーマ散策を計画します。',
@@ -82,6 +97,14 @@ export const messages = {
     advanced: '詳細設定',
     play: '徒歩で歩く',
     pause: '歩行停止',
+    emptyTitle: '都市データがありません',
+    emptyBody:
+      'エリアとテーマを選んで生成すると、OpenStreetMapの実在スポットからルートを作ります。架空の場所は出しません。',
+    emptyHint: '左のパネルから生成してください。実データが届くと3Dが表示されます。',
+    openDemo: 'ラベル付きデモ都市を開く',
+    saveNeedSignIn: '保存するにはプロフィールでサインインしてください。',
+    saved: '旅程を保存しました',
+    saveFailed: '旅程を保存できませんでした。',
   },
 } as const satisfies Record<'en' | 'ja', Record<MessageKey, string>>;
 
